@@ -1,0 +1,2155 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>КазАвтоЖол - Дорожная информация Акмолинской области</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Подключаем Leaflet для карты -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a3a8f 0%, #2d5cc2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1400px;
+            width: 100%;
+            margin: 0 auto;
+            background-color: rgba(255, 255, 255, 0.98);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+        }
+        
+        .header {
+            background: linear-gradient(to right, #0057b8, #0085e5);
+            color: white;
+            padding: 25px 30px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+        }
+        
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .logo-icon {
+            font-size: 2.5rem;
+            background-color: white;
+            color: #0057b8;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .header-text h1 {
+            font-size: 1.4rem;
+            margin-bottom: 5px;
+            font-weight: 700;
+        }
+        
+        .header-text p {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+        
+        .nav-tabs {
+            display: flex;
+            background-color: #f0f5ff;
+            border-bottom: 2px solid #ddd;
+            overflow-x: auto;
+        }
+        
+        .nav-tab {
+            flex: 1;
+            min-width: 140px;
+            text-align: center;
+            padding: 18px 10px;
+            cursor: pointer;
+            font-weight: 600;
+            color: #0057b8;
+            transition: all 0.3s;
+            border-bottom: 3px solid transparent;
+            white-space: nowrap;
+        }
+        
+        .nav-tab:hover {
+            background-color: #e6eeff;
+        }
+        
+        .nav-tab.active {
+            background-color: white;
+            border-bottom: 3px solid #0057b8;
+            color: #003a7a;
+        }
+        
+        .tab-content {
+            display: none;
+            padding: 30px;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .section-title {
+            color: #0057b8;
+            font-size: 1.8rem;
+            margin-bottom: 25px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #eee;
+            font-weight: 700;
+        }
+        
+        .info-box {
+            background-color: #f8f9ff;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            border-left: 5px solid #0057b8;
+            box-shadow: 0 5px 15px rgba(0, 87, 184, 0.08);
+        }
+        
+        .social-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-top: 10px;
+        }
+        
+        .social-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background-color: white;
+            padding: 15px 20px;
+            border-radius: 12px;
+            flex: 1;
+            min-width: 200px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s, box-shadow 0.3s;
+            text-decoration: none;
+            color: inherit;
+        }
+        
+        .social-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .social-item.instagram {
+            border-top: 4px solid #E4405F;
+        }
+        
+        .social-item.telegram {
+            border-top: 4px solid #26A5E4;
+        }
+        
+        .social-icon {
+            font-size: 1.8rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+        
+        .instagram .social-icon {
+            background: linear-gradient(45deg, #405DE6, #5851DB, #833AB4, #C13584, #E1306C, #FD1D1D);
+        }
+        
+        .telegram .social-icon {
+            background-color: #26A5E4;
+        }
+        
+        .social-text h4 {
+            font-size: 1.1rem;
+            color: #333;
+            margin-bottom: 3px;
+        }
+        
+        .social-text p {
+            font-size: 0.9rem;
+            color: #666;
+        }
+        
+        .phone-section {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            background: linear-gradient(to right, #0085e5, #0057b8);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            margin-top: 25px;
+        }
+        
+        .phone-icon {
+            font-size: 2.5rem;
+            background-color: white;
+            color: #0057b8;
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .phone-text h3 {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+        }
+        
+        .phone-numbers {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+            margin: 15px 0;
+        }
+        
+        .phone-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .phone-number-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 8px;
+        }
+        
+        .organization-logo {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            color: white;
+            font-weight: bold;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        .kazavtozhol-logo {
+            background: linear-gradient(45deg, #0057b8, #0085e5);
+            font-size: 0.9rem;
+            text-align: center;
+            line-height: 1.1;
+            padding: 5px;
+        }
+        
+        .mchs-logo {
+            background: linear-gradient(45deg, #ff3333, #ff6666);
+            font-size: 1rem;
+            text-align: center;
+            line-height: 1.1;
+            padding: 5px;
+        }
+        
+        .phone-number {
+            font-size: 2rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+        
+        .emergency-number {
+            color: #ff3333;
+            text-shadow: 0 0 5px rgba(255, 51, 51, 0.3);
+        }
+        
+        .phone-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            margin-top: 5px;
+            text-align: center;
+            max-width: 180px;
+        }
+        
+        .phone-desc {
+            opacity: 0.9;
+            font-size: 1rem;
+            margin-top: 10px;
+        }
+        
+        /* Поиск и фильтры */
+        .search-container {
+            margin-bottom: 20px;
+        }
+        
+        .search-box {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #0057b8;
+            border-radius: 10px;
+            font-size: 1rem;
+            margin-bottom: 10px;
+        }
+        
+        .filter-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .filter-btn {
+            padding: 10px 20px;
+            border: 2px solid #0057b8;
+            background-color: white;
+            color: #0057b8;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .filter-btn:hover {
+            background-color: #e6eeff;
+        }
+        
+        .filter-btn.active {
+            background-color: #0057b8;
+            color: white;
+        }
+        
+        .district-select {
+            padding: 10px 15px;
+            border: 2px solid #0057b8;
+            border-radius: 25px;
+            font-size: 1rem;
+            background-color: white;
+            color: #0057b8;
+            font-weight: 600;
+            cursor: pointer;
+            min-width: 200px;
+        }
+        
+        .stats-box {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-card {
+            flex: 1;
+            min-width: 200px;
+            background: linear-gradient(to right, #0085e5, #0057b8);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .stat-card.green {
+            background: linear-gradient(to right, #28a745, #20c997);
+        }
+        
+        .stat-card.orange {
+            background: linear-gradient(to right, #fd7e14, #ffc107);
+        }
+        
+        .stat-card.purple {
+            background: linear-gradient(to right, #6f42c1, #d63384);
+        }
+        
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+        
+        .table-container {
+            overflow-x: auto;
+            margin-top: 20px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+        
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .data-table thead {
+            background-color: #0057b8;
+            color: white;
+        }
+        
+        .data-table th {
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+        }
+        
+        .data-table td {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .data-table tbody tr:hover {
+            background-color: #f8f9ff;
+        }
+        
+        .data-table tbody tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        
+        .connector-badge {
+            display: inline-block;
+            padding: 5px 10px;
+            background-color: #e6eeff;
+            color: #0057b8;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin: 2px;
+        }
+        
+        .connector-badge.gb {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        
+        .connector-badge.ccs {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        
+        .power-badge {
+            display: inline-block;
+            padding: 5px 10px;
+            background: linear-gradient(45deg, #28a745, #20c997);
+            color: white;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin: 2px;
+        }
+        
+        .road-badge {
+            display: inline-block;
+            padding: 5px 10px;
+            background-color: #f8d7da;
+            color: #721c24;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        
+        .district-badge {
+            display: inline-block;
+            padding: 5px 10px;
+            background-color: #e6eeff;
+            color: #0057b8;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        
+        .pagination {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+            gap: 5px;
+        }
+        
+        .pagination button {
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            background-color: white;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        
+        .pagination button.active {
+            background-color: #0057b8;
+            color: white;
+            border-color: #0057b8;
+        }
+        
+        /* Карта */
+        .map-container {
+            margin-top: 30px;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            height: 500px;
+        }
+        
+        #chargingMap, #heatingMap {
+            width: 100%;
+            height: 100%;
+        }
+        
+        .map-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .map-toggle {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background-color: white;
+            padding: 10px 15px;
+            border-radius: 25px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .map-toggle:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        .map-toggle.active {
+            background-color: #0057b8;
+            color: white;
+        }
+        
+        .map-toggle i {
+            font-size: 1.2rem;
+        }
+        
+        /* Адаптивный дизайн */
+        .footer {
+            background-color: #003a7a;
+            color: white;
+            padding: 25px 30px;
+            text-align: center;
+        }
+        
+        .update-notice {
+            background-color: #fff9e6;
+            padding: 12px 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            color: #8a6d3b;
+            font-size: 0.95rem;
+        }
+        
+        .road-info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .road-info-card {
+            background-color: #f8f9ff;
+            border-radius: 10px;
+            padding: 20px;
+            border-left: 4px solid #0057b8;
+        }
+        
+        .road-info-card h4 {
+            color: #0057b8;
+            margin-bottom: 10px;
+        }
+        
+        .contact-form {
+            margin-top: 30px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .form-group input, .form-group textarea, .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+        
+        .form-group textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+        
+        .submit-btn {
+            background: linear-gradient(to right, #0057b8, #0085e5);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+        
+        .submit-btn:hover {
+            transform: translateY(-3px);
+        }
+        
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                text-align: center;
+                gap: 15px;
+            }
+            
+            .logo-section {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .nav-tabs {
+                flex-direction: column;
+            }
+            
+            .nav-tab {
+                padding: 15px;
+            }
+            
+            .social-item {
+                min-width: 100%;
+            }
+            
+            .phone-section {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .phone-numbers {
+                flex-direction: column;
+                gap: 25px;
+        }
+            
+            .phone-number {
+                font-size: 1.7rem;
+            }
+            
+            .phone-number-wrapper {
+                justify-content: center;
+            }
+            
+            .organization-logo {
+                width: 45px;
+                height: 45px;
+                font-size: 0.8rem;
+            }
+            
+            .data-table {
+                font-size: 0.9rem;
+            }
+            
+            .data-table th, .data-table td {
+                padding: 10px;
+            }
+            
+            .map-container {
+                height: 350px;
+            }
+            
+            .filter-buttons {
+                justify-content: center;
+            }
+            
+            .district-select {
+                min-width: 100%;
+            }
+        }
+        
+        /* Стили для иконок зарядных станций и пунктов обогрева */
+        .ev-icon {
+            background-color: #28a745;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 14px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        
+        .ev-icon.green {
+            background-color: #28a745;
+        }
+        
+        .ev-icon.blue {
+            background-color: #007bff;
+        }
+        
+        .ev-icon.orange {
+            background-color: #fd7e14;
+        }
+        
+        .heating-icon {
+            background-color: #e74c3c;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 14px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        
+        .heating-icon.red {
+            background-color: #e74c3c;
+        }
+        
+        .heating-icon.orange {
+            background-color: #f39c12;
+        }
+        
+        .leaflet-popup-content {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-width: 250px;
+        }
+        
+        .leaflet-popup-content h3 {
+            color: #0057b8;
+            margin-bottom: 10px;
+        }
+        
+        .leaflet-popup-content .popup-info {
+            margin: 5px 0;
+        }
+        
+        .leaflet-popup-content .popup-label {
+            font-weight: 600;
+            color: #555;
+        }
+        
+        .capacity-badge {
+            display: inline-block;
+            padding: 5px 10px;
+            background-color: #d4edda;
+            color: #155724;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin: 2px;
+        }
+        
+        .capacity-badge.full {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        
+        .tab-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .export-btn {
+            background: linear-gradient(to right, #28a745, #20c997);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: transform 0.3s;
+        }
+        
+        .export-btn:hover {
+            transform: translateY(-3px);
+        }
+        
+        .export-btn.blue {
+            background: linear-gradient(to right, #0057b8, #0085e5);
+        }
+        
+        .data-info {
+            margin-top: 15px;
+            font-size: 0.9rem;
+            color: #666;
+            text-align: center;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+        
+        .loading i {
+            font-size: 2rem;
+            margin-bottom: 15px;
+            color: #0057b8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo-section">
+                <div class="logo-icon">
+                    <i class="fas fa-road"></i>
+                </div>
+                <div class="header-text">
+                    <h1>Акмолинский областной филиал АО «НК «КазАвтоЖол»</h1>
+                    <p>Информация о дорожных работах, пунктах обогрева и зарядных станциях</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="nav-tabs">
+            <div class="nav-tab active" data-tab="home">
+                <i class="fas fa-home"></i> Главная
+            </div>
+            <div class="nav-tab" data-tab="heating">
+                <i class="fas fa-fire"></i> Пункты обогрева
+            </div>
+            <div class="nav-tab" data-tab="charging">
+                <i class="fas fa-charging-station"></i> Зарядные станции
+            </div>
+            <div class="nav-tab" data-tab="roads">
+                <i class="fas fa-road"></i> Дорожная сеть
+            </div>
+            <div class="nav-tab" data-tab="contacts">
+                <i class="fas fa-address-book"></i> Контакты
+            </div>
+        </div>
+        
+        <!-- Главная вкладка -->
+        <div id="home" class="tab-content active">
+            <h2 class="section-title"><i class="fas fa-info-circle"></i> Ежедневные обновления</h2>
+            
+            <div class="info-box">
+                <div class="social-links">
+                    <a href="https://instagram.com/qqj_akmola" target="_blank" class="social-item instagram">
+                        <div class="social-icon">
+                            <i class="fab fa-instagram"></i>
+                        </div>
+                        <div class="social-text">
+                            <h4>Instagram</h4>
+                            <p>@qqj_akmola - ежедневные обновления</p>
+                        </div>
+                    </a>
+                    
+                    <a href="https://t.me/дорогиказахстана" target="_blank" class="social-item telegram">
+                        <div class="social-icon">
+                            <i class="fab fa-telegram"></i>
+                        </div>
+                        <div class="social-text">
+                            <h4>Telegram</h4>
+                            <p>Дороги Казахстана - оперативная информация</p>
+                        </div>
+                    </a>
+                </div>
+                
+                <div class="update-notice">
+                    <i class="fas fa-sync-alt"></i>
+                    <span>Информация обновляется ежедневно в 08:00 и 18:00</span>
+                </div>
+            </div>
+            
+            <div class="phone-section">
+                <div class="phone-icon">
+                    <i class="fas fa-phone-alt"></i>
+                </div>
+                <div class="phone-text">
+                    <h3>Круглосуточные телефоны</h3>
+                    <div class="phone-numbers">
+                        <div class="phone-item">
+                            <div class="phone-number-wrapper">
+                                <div class="organization-logo kazavtozhol-logo">
+                                    КАЗАВТО<br>ЖОЛ
+                                </div>
+                                <div class="phone-number">1403</div>
+                            </div>
+                            <span class="phone-label">Колл-центр КазАвтоЖол Казахстана</span>
+                        </div>
+                        <div class="phone-item">
+                            <div class="phone-number-wrapper">
+                                <div class="organization-logo mchs-logo">
+                                    МЧС
+                                </div>
+                                <div class="phone-number emergency-number">112</div>
+                            </div>
+                            <span class="phone-label">МЧС Казахстана - экстренные случаи</span>
+                        </div>
+                    </div>
+                    <p class="phone-desc">Звоните в любое время для получения информации о дорожной ситуации</p>
+                </div>
+            </div>
+            
+            <div class="info-box">
+                <h3><i class="fas fa-exclamation-triangle"></i> Важная информация</h3>
+                <p>На территории Акмолинской области функционируют <strong>280 пунктов обогрева</strong> для водителей и пассажиров в зимний период 2025-2026 гг.</p>
+                <p>Общая протяженность дорог республиканского значения в области составляет <strong>2347,1 км</strong>.</p>
+                <p>В области работают <strong>7 зарядных станций</strong> для электромобилей на основных трассах.</p>
+            </div>
+            
+            <div class="road-info-grid">
+                <div class="road-info-card">
+                    <h4><i class="fas fa-fire"></i> Пункты обогрева</h4>
+                    <p><strong>280 пунктов</strong> по всей области</p>
+                    <p><strong>11853 человека</strong> общая вместимость</p>
+                    <p><strong>20 районов</strong> охвачено</p>
+                </div>
+                
+                <div class="road-info-card">
+                    <h4><i class="fas fa-charging-station"></i> Зарядные станции</h4>
+                    <p><strong>7 станций</strong> для электромобилей</p>
+                    <p><strong>160 кВт</strong> максимальная мощность</p>
+                    <p><strong>Круглосуточная</strong> работа</p>
+                </div>
+                
+                <div class="road-info-card">
+                    <h4><i class="fas fa-road"></i> Дорожная сеть</h4>
+                    <p><strong>2347,1 км</strong> дорог республиканского значения</p>
+                    <p><strong>724 сотрудника</strong> в штате</p>
+                    <p><strong>201 единица</strong> зимней техники</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Пункты обогрева -->
+        <div id="heating" class="tab-content">
+            <div class="tab-header">
+                <h2 class="section-title"><i class="fas fa-fire"></i> Пункты обогрева Акмолинской области</h2>
+                <div>
+                    <button class="export-btn" id="exportHeating">
+                        <i class="fas fa-file-export"></i> Экспорт данных
+                    </button>
+                </div>
+            </div>
+            
+            <div class="stats-box">
+                <div class="stat-card">
+                    <div class="stat-number">280</div>
+                    <div class="stat-label">Всего пунктов обогрева</div>
+                </div>
+                <div class="stat-card green">
+                    <div class="stat-number">11853</div>
+                    <div class="stat-label">Общая вместимость</div>
+                </div>
+                <div class="stat-card orange">
+                    <div class="stat-number">889</div>
+                    <div class="stat-label">Койко-мест</div>
+                </div>
+                <div class="stat-card purple">
+                    <div class="stat-number">20</div>
+                    <div class="stat-label">Районов области</div>
+                </div>
+            </div>
+            
+            <!-- Убрана карта и элементы управления картой -->
+            
+            <!-- Таблица пунктов обогрева -->
+            <div id="heatingTableSection">
+                <div class="search-container">
+                    <input type="text" id="heatingSearchInput" class="search-box" placeholder="Поиск по населённому пункту, району, дороге или контактам...">
+                    <div class="filter-buttons">
+                        <select id="districtSelect" class="district-select">
+                            <option value="all">Все районы</option>
+                            <option value="Кокшетау">г. Кокшетау</option>
+                            <option value="Степногорск">г. Степногорск</option>
+                            <option value="Косшы">г. Косшы</option>
+                            <option value="Астраханский">Астраханский район</option>
+                            <option value="Атбасарский">Атбасарский район</option>
+                            <option value="Аккольский">Аккольский район</option>
+                            <option value="Аршалынский">Аршалынский район</option>
+                            <option value="Буландынский">Буландынский район</option>
+                            <option value="Бурабайский">Бурабайский район</option>
+                            <option value="Биржан сал">Район Биржан сал</option>
+                            <option value="Есильский">Есильский район</option>
+                            <option value="Ерейментауский">Ерейментауский район</option>
+                            <option value="Егиндыкольский">Егиндыкольский район</option>
+                            <option value="Зерендинский">Зерендинский район</option>
+                            <option value="Жаркаинский">Жаркаинский район</option>
+                            <option value="Жаксынский">Жаксынский район</option>
+                            <option value="Коргалжынский">Коргалжынский район</option>
+                            <option value="Сандыктауский">Сандыктауский район</option>
+                            <option value="Шортандинский">Шортандинский район</option>
+                            <option value="Целиноградский">Целиноградский район</option>
+                        </select>
+                        <button id="filterAll" class="filter-btn active">Все</button>
+                        <button id="filterWithBeds" class="filter-btn">С койко-местами</button>
+                        <button id="filterHighway" class="filter-btn">На трассах</button>
+                    </div>
+                </div>
+                
+                <div class="table-container">
+                    <table class="data-table" id="heatingTable">
+                        <thead>
+                            <tr>
+                                <th>№</th>
+                                <th>Населённый пункт</th>
+                                <th>Район</th>
+                                <th>Пункт обогрева</th>
+                                <th>Вместимость</th>
+                                <th>Контакты</th>
+                                <th>Дорога</th>
+                            </tr>
+                        </thead>
+                        <tbody id="heatingTableBody">
+                            <!-- Данные будут добавлены через JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="data-info" id="heatingDataInfo">
+                    Показано <span id="heatingShowing">0</span> из <span id="heatingTotal">0</span> пунктов
+                </div>
+                
+                <div class="pagination" id="heatingPagination">
+                    <!-- Пагинация будет добавлена через JavaScript -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- Зарядные станции -->
+        <div id="charging" class="tab-content">
+            <div class="tab-header">
+                <h2 class="section-title"><i class="fas fa-charging-station"></i> Зарядные станции для электромобилей</h2>
+                <div>
+                    <button class="export-btn blue" id="exportCharging">
+                        <i class="fas fa-file-export"></i> Экспорт данных
+                    </button>
+                </div>
+            </div>
+            
+            <div class="stats-box">
+                <div class="stat-card">
+                    <div class="stat-number">7</div>
+                    <div class="stat-label">Станций в области</div>
+                </div>
+                <div class="stat-card green">
+                    <div class="stat-number">6</div>
+                    <div class="stat-label">На трассе А-1</div>
+                </div>
+                <div class="stat-card orange">
+                    <div class="stat-number">160</div>
+                    <div class="stat-label">Макс. мощность (кВт)</div>
+                </div>
+                <div class="stat-card purple">
+                    <div class="stat-number">24/7</div>
+                    <div class="stat-label">Круглосуточная работа</div>
+                </div>
+            </div>
+            
+            <!-- Карта зарядных станций -->
+            <div class="map-controls">
+                <h3><i class="fas fa-map-marked-alt"></i> Карта расположения станций</h3>
+                <div class="map-toggle" id="toggleChargingTable">
+                    <i class="fas fa-table"></i>
+                    <span>Показать таблицу</span>
+                </div>
+            </div>
+            
+            <div class="map-container">
+                <div id="chargingMap"></div>
+            </div>
+            
+            <!-- Таблица зарядных станций -->
+            <div id="chargingTableSection" style="display: none;">
+                <div class="search-container">
+                    <input type="text" id="chargingSearchInput" class="search-box" placeholder="Поиск по местоположению, типу разъёма или оператору...">
+                    <div class="filter-buttons">
+                        <button id="chargingFilterAll" class="filter-btn active">Все станции</button>
+                        <button id="chargingFilterGB" class="filter-btn">GB/T</button>
+                        <button id="chargingFilterCCS" class="filter-btn">CCS 2</button>
+                        <button id="chargingFilterHighPower" class="filter-btn">Высокая мощность</button>
+                    </div>
+                </div>
+                
+                <div class="table-container">
+                    <table class="data-table" id="chargingTable">
+                        <thead>
+                            <tr>
+                                <th>№</th>
+                                <th>Местоположение</th>
+                                <th>Типы разъёмов</th>
+                                <th>График работы</th>
+                                <th>Мощность</th>
+                                <th>Оператор</th>
+                                <th>Трасса</th>
+                            </tr>
+                        </thead>
+                        <tbody id="chargingTableBody">
+                            <!-- Данные будут добавлены через JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="data-info" id="chargingDataInfo">
+                    Показано <span id="chargingShowing">0</span> из <span id="chargingTotal">0</span> станций
+                </div>
+                
+                <div class="pagination" id="chargingPagination">
+                    <!-- Пагинация будет добавлена через JavaScript -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- Дорожная сеть -->
+        <div id="roads" class="tab-content">
+            <h2 class="section-title"><i class="fas fa-road"></i> Дорожная сеть Акмолинской области</h2>
+            
+            <div class="road-info-grid">
+                <div class="road-info-card">
+                    <h4><i class="fas fa-chart-line"></i> Общая информация</h4>
+                    <p><strong>2347,1 км</strong> - общая сеть автомобильных дорог республиканского значения</p>
+                    <p><strong>555,5 км</strong> - платные участки дорог</p>
+                    <p><strong>2287,7 км</strong> на содержании ТОО «КАЖсервис»</p>
+                </div>
+                
+                <div class="road-info-card">
+                    <h4><i class="fas fa-users"></i> Персонал и подразделения</h4>
+                    <p><strong>724 сотрудника</strong> в штате ТОО «КАЖсервис»</p>
+                    <p><strong>14 ДЭУ, 8 ДЭП, 1 ЛПУ</strong> - дорожно-эксплуатационные участки и пункты</p>
+                    <p><strong>2 филиала</strong> в городах Кокшетау и Астана</p>
+                </div>
+                
+                <div class="road-info-card">
+                    <h4><i class="fas fa-snowflake"></i> Зимнее содержание</h4>
+                    <p><strong>201 единица</strong> техники в АОФ ТОО «КАЖсервис»</p>
+                    <p><strong>114 единиц</strong> техники в Кокшетауском филиале</p>
+                    <p><strong>Готовность техники:</strong> 99% и 95% соответственно</p>
+                </div>
+            </div>
+            
+            <div class="info-box">
+                <h4><i class="fas fa-list"></i> Основные дороги республиканского значения</h4>
+                <ul style="margin-left: 20px; margin-top: 10px;">
+                    <li>Трасса «Алматы-Екатеринбург» (М-36)</li>
+                    <li>Трасса «Астана-Петропавловск» (А-1)</li>
+                    <li>Трасса «Кокшетау-Щучинск»</li>
+                    <li>Трасса «Кокшетау-Атбасар»</li>
+                    <li>Трасса «Астана-Темиртау»</li>
+                    <li>Трасса «Жаксы-Есиль-Бузулук»</li>
+                    <li>Трасса «Петропавловск-Жезказган»</li>
+                </ul>
+            </div>
+            
+            <div class="info-box">
+                <h4><i class="fas fa-map-marked-alt"></i> Карта основных дорог</h4>
+                <div class="map-container" style="height: 400px; margin-top: 15px;">
+                    <div id="roadsMap"></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Контакты -->
+        <div id="contacts" class="tab-content">
+            <h2 class="section-title"><i class="fas fa-address-book"></i> Контактная информация</h2>
+            
+            <div class="road-info-grid">
+                <div class="road-info-card">
+                    <h4><i class="fas fa-building"></i> Акмолинский областной филиал</h4>
+                    <p><strong>Адрес:</strong> г. Кокшетау</p>
+                    <p><strong>Штат:</strong> 471 сотрудник</p>
+                    <p><strong>Техника:</strong> 201 единица</p>
+                </div>
+                
+                <div class="road-info-card">
+                    <h4><i class="fas fa-building"></i> Кокшетауский филиал</h4>
+                    <p><strong>Адрес:</strong> г. Кокшетау</p>
+                    <p><strong>Штат:</strong> 253 сотрудника</p>
+                    <p><strong>Техника:</strong> 114 единиц</p>
+                </div>
+                
+                <div class="road-info-card">
+                    <h4><i class="fas fa-phone"></i> Телефоны для справок</h4>
+                    <p><strong>Колл-центр:</strong> 1403 (круглосуточно)</p>
+                    <p><strong>Экстренные службы:</strong> 112</p>
+                    <p><strong>Дорожная полиция:</strong> 102</p>
+                </div>
+                
+                <div class="road-info-card">
+                    <h4><i class="fas fa-clock"></i> Режим работы</h4>
+                    <p><strong>Офис:</strong> Пн-Пт 9:00-18:00</p>
+                    <p><strong>Колл-центр:</strong> Круглосуточно</p>
+                    <p><strong>Аварийные службы:</strong> Круглосуточно</p>
+                </div>
+            </div>
+            
+            <div class="contact-form">
+                <h3><i class="fas fa-envelope"></i> Форма обратной связи</h3>
+                <form id="feedbackForm">
+                    <div class="form-group">
+                        <label for="name">Ваше имя *</label>
+                        <input type="text" id="name" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="email">Email *</label>
+                        <input type="email" id="email" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="subject">Тема сообщения</label>
+                        <select id="subject">
+                            <option value="road">Состояние дорог</option>
+                            <option value="heating">Пункты обогрева</option>
+                            <option value="charging">Зарядные станции</option>
+                            <option value="repair">Дорожные работы</option>
+                            <option value="other">Другое</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="message">Сообщение *</label>
+                        <textarea id="message" required></textarea>
+                    </div>
+                    
+                    <button type="submit" class="submit-btn">Отправить сообщение</button>
+                </form>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>Акмолинский областной филиал АО «НК «КазАвтоЖол»</p>
+            <p>© 2025 Все права защищены. Информация актуальна на 2025-2026 гг.</p>
+            <p style="margin-top: 10px; font-size: 0.9rem; opacity: 0.8;">
+                <i class="fas fa-charging-station"></i> В области работают 7 зарядных станций для электромобилей |
+                <i class="fas fa-fire"></i> Функционируют 280 пунктов обогрева
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // Полные данные всех 280 пунктов обогрева
+        const heatingPoints = [
+            // г. Кокшетау (6 пунктов)
+            {id: 1, city: "г. Кокшетау", district: "г. Кокшетау", point: "ТОО «Кулагер-Кокше»", capacity: "20/15", contacts: "Сердюкова Галина Николаевна, 87013303007", road: "Трасса «Кокшетау – Щучинск»"},
+            {id: 2, city: "г. Кокшетау", district: "г. Кокшетау", point: "Отель «Kokshetau Hotel»", capacity: "27/27", contacts: "Бексултанова Кукаршин Нурмагамбетовна, 87473134370", road: "Трасса «Кокшетау – Щучинск»"},
+            {id: 3, city: "г. Кокшетау", district: "г. Кокшетау", point: "Гостиница «Алем»", capacity: "30/30", contacts: "Скаковский Александр Григорьевич, 87024888917", road: "Трасса «Кокшетау – Омск»"},
+            {id: 4, city: "г. Кокшетау", district: "г. Кокшетау", point: "Гостиница «Рахат»", capacity: "22/22", contacts: "Шаяхметов Бакиджан Какенгулы, 87017825060", road: "Трасса «Кокшетау – Атбасар»"},
+            {id: 5, city: "г. Кокшетау", district: "г. Кокшетау", point: "КГУ «Кокшетауский городской центр социальной адаптации»", capacity: "50/50", contacts: "Айтутанов Сулгат Капарулы, 87773550487", road: "Трасса «Кокшетау – Щучинск»"},
+            {id: 6, city: "г. Кокшетау", district: "г. Кокшетау", point: "Железнодорожный вокзал", capacity: "30/30", contacts: "Армстанкызы Роза, 87782091050", road: "Трасса «Кокшетау – Петропавловск»"},
+            
+            // г. Степногорск (7 пунктов)
+            {id: 7, city: "г. Степногорск", district: "г. Степногорск", point: "КГУ «Общеобразовательная школа с. Кырык кудык»", capacity: "30/-", contacts: "Темирбек Ерболат, 87718107501", road: "Трасса «Макинск- Аксу- Тургай»"},
+            {id: 8, city: "г. Степногорск", district: "г. Степногорск", point: "КГУ «Общеобразовательная школа с. Байконыс»", capacity: "30/-", contacts: "Сануар Бердигул, 87711611928", road: "Трасса «Макинск- Аксу- Тургай»"},
+            {id: 9, city: "г. Степногорск", district: "г. Степногорск", point: "КГУ «Общеобразовательная школа №2 п. Аксу»", capacity: "30/-", contacts: "Крылата Роза Шаменовна, 87017588269", road: "А/д «Кырык-кудык-Аксу»"},
+            {id: 10, city: "г. Степногорск", district: "г. Степногорск", point: "КГУ «Общеобразовательная школа п. Заводской»", capacity: "30/-", contacts: "Дауленбаева Шынара Егинбаевна, 87014846202", road: "А/д «Заводской-Бестобе»"},
+            {id: 11, city: "г. Степногорск", district: "г. Степногорск", point: "КГУ «Общеобразовательная школа №2 п. Бестобе»", capacity: "30/-", contacts: "Рыспаев Айдар Аманжолович, 87712560488", road: "А/д «Заводской-Бестобе»"},
+            {id: 12, city: "г. Степногорск", district: "г. Степногорск", point: "КГУ «Общеобразовательная школа с. Карабулак»", capacity: "40/-", contacts: "Хасен Назым, 87479227874", road: "А/д «Степногорск -Акколь»"},
+            {id: 13, city: "г. Степногорск", district: "г. Степногорск", point: "КГУ «Областная специализированная школа-интернат для одаренных детей «Болашак»", capacity: "30/30", contacts: "Турганбаева Гульшира Казиевна, 87087526495", road: "А/д «Степногорск -Акколь»"},
+            
+            // г. Косшы (2 пункта)
+            {id: 14, city: "г. Косшы", district: "г. Косшы", point: "ТОО «Темеш-Астана» - база отдыха", capacity: "30/30", contacts: "Молшын Айтмухамед Абдикапарович, 87015995439", road: "Трасса «Астана-Темиртау»"},
+            {id: 15, city: "г. Косшы", district: "г. Косшы", point: "ИП «Рахимбергенова» - кафе «Алатау»", capacity: "20/20", contacts: "Нурлыбаева Саягуль, 87075025232", road: "Трасса «Астана-Темиртау»"},
+            
+            // Астраханский район (22 пункта)
+            {id: 16, city: "с. Жалтыр", district: "Астраханский район", point: "КГУ «Общеобразовательная школа № 1 с. Жалтыр»", capacity: "20/-", contacts: "Кыстаубаева Гульжан Нурсагитовна, 87757525990", road: "Трасса «Алматы-Екатеринбург»"},
+            {id: 17, city: "с. Жалтыр", district: "Астраханский район", point: "КГУ «Общеобразовательная школа № 2 с. Жалтыр»", capacity: "25/-", contacts: "Серикбаева Ақ-Жұпар Узақбайкызы, 87028846391", road: "Трасса «Алматы-Екатеринбург»"},
+            {id: 18, city: "с. Астраханка", district: "Астраханский район", point: "КГУ «Общеобразовательная школа № 2 с. Астраханка»", capacity: "20/-", contacts: "Хохрякова Галина Викторовна, 87012515896", road: "Трасса «Алматы-Екатеринбург»"},
+            {id: 19, city: "с. Новочеркасское", district: "Астраханский район", point: "КГУ «Общеобразовательная школа с. Новочеркасское»", capacity: "20/-", contacts: "Альмаханова Зумурат Жарылкасымовна, 87776999011", road: "Трасса «Алматы-Екатеринбург»"},
+            {id: 20, city: "с. Петровка", district: "Астраханский район", point: "КГУ «Общеобразовательная школа с. Петровка»", capacity: "20/-", contacts: "Ищанова Зарина Тайпаковна, 87071900210", road: "Трасса «Алматы-Екатеринбург»"},
+            {id: 21, city: "с. Жамбыл", district: "Астраханский район", point: "КГУ «Общеобразовательная школа с. Жамбыл»", capacity: "15/-", contacts: "Дюсекеева Меруерт Оразалиевна, 87473292829", road: "Трасса «Алматы-Екатеринбург»"},
+            {id: 22, city: "с. Ундурус", district: "Астраханский район", point: "КГУ «Общеобразовательная школа с. Ондирис»", capacity: "15/-", contacts: "Сатемиров Серик Карбаевич, 87074685437", road: "Трасса «Алматы-Екатеринбург»"},
+            {id: 23, city: "с. Каменка", district: "Астраханский район", point: "КГУ «Общеобразовательная школа с. Каменка»", capacity: "20/-", contacts: "Кабдулин Ринат Толеубаевич, 87719999029", road: "Трасса «Алматы-Екатеринбург»"},
+            {id: 24, city: "с. Старый Колутон", district: "Астраханский район", point: "КГУ «Общеобразовательная школа с. Старый Колутон»", capacity: "20/-", contacts: "Шукеева Гульнур Умиржновна, 87471705800", road: "Трасса «Алматы-Екатеринбург»"},
+            {id: 25, city: "с. Урнек", district: "Астраханский район", point: "КГУ «Начальная школа с. Орнек»", capacity: "10/-", contacts: "Ащербаканова Роза Турлыбековна, 87024818961", road: "Трасса «Алматы-Екатеринбург»"},
+            {id: 26, city: "с. Караколь", district: "Астраханский район", point: "КГУ «Основная средняя школа с. Караколь»", capacity: "10/-", contacts: "Габдуллина Гульшехизада Сапаргалиевна, 87051151810", road: "Трасса «Алматы-Екатеринбург»"},
+            {id: 27, city: "с. Ковыленка", district: "Астраханский район", point: "КГУ «Основная средняя школа с. Ковыленка»", capacity: "15/-", contacts: "Бакишев Болат Гомарович, 87779740528", road: "Трасса «Алматы-Екатеринбург»"},
+            {id: 28, city: "с. Степное", district: "Астраханский район", point: "КГУ «Основная средняя школа с. Степное»", capacity: "10/-", contacts: "Богинская Елена Александровна, 87056275500", road: "А/д «Новочеркасск-Егиндыколь-Кайнарское»"},
+            {id: 29, city: "с. Жанатурмыс", district: "Астраханский район", point: "КГУ «Общеобразовательная школа с. Жанатурмыс»", capacity: "15/-", contacts: "Жунусова Динара Музафаровна, 87024662521", road: "А/д «Жалтыр-Макинск»"},
+            {id: 30, city: "с. Акимовка", district: "Астраханский район", point: "КГУ «Общеобразовательная школа с. Акимовка»", capacity: "10/-", contacts: "Куценко Валентина Юрьевна, 87711265032", road: "А/д «Жалтыр-Макинск»"},
+            {id: 31, city: "с. Оксановка", district: "Астраханский район", point: "КГУ «Основная средняя школа с. Оксановка»", capacity: "15/-", contacts: "Авсеева Инга Петровна, 87713742069", road: "А/д «Жалтыр-Макинск»"},
+            {id: 32, city: "с. Зеленое", district: "Астраханский район", point: "КГУ «Общеобразовательная школа с. Зеленое»", capacity: "15/-", contacts: "Кабдулина Жанар Сагынтаевна, 87074208379", road: "А/д «Новочеркасск-Егиндыколь-Кайнарское»"},
+            {id: 33, city: "с. Первомайка", district: "Астраханский район", point: "КГУ «Общеобразовательная школа с. Первомайка»", capacity: "20/-", contacts: "Нысанбаева Жанат Галымовна, 87475039010", road: "А/д «Новочеркасск-Егиндыколь-Кайнарское»"},
+            {id: 34, city: "с. Узынколь", district: "Астраханский район", point: "КГУ «Основная средняя школа с.Узункуль»", capacity: "10/-", contacts: "Нуржанов Дархан Жаксылыкович, 87774130409", road: "А/д «Новочеркасск-Егиндыколь-Кайнарское»"},
+            {id: 35, city: "с. Приишимка", district: "Астраханский район", point: "КГУ «Основная средняя школа с. Приишимка»", capacity: "10/-", contacts: "Булаевская Валентина Иосифовна, 87754774015", road: "А/д «Новочеркасск-Егиндыколь-Кайнарское»"},
+            {id: 36, city: "с. Лозовое", district: "Астраханский район", point: "КГУ «Основная средняя школа с. Лозовое»", capacity: "10/-", contacts: "Сейдахметов Ержан Тилегенович, 87071499620", road: "А/д «Новочеркасск-Егиндыколь-Кайнарское»"},
+            {id: 37, city: "с. Камышенка", district: "Астраханский район", point: "КГУ «Общеобразовательная школа с. Камышенка»", capacity: "15/-", contacts: "Ковальчук Наталья Андреевна, 87779291592", road: "А/д «Новочеркасск-Егиндыколь-Кайнарское»"},
+            
+            // Атбасарский район (18 пунктов)
+            {id: 38, city: "с. Борисовка", district: "Атбасарский район", point: "КГУ «Борисовская средняя школа»", capacity: "30/-", contacts: "Буряк Карлыгаш Маратовна, 87712444943", road: "Трасса «Кокшетау-Атбасар»"},
+            {id: 39, city: "с. Полтавка", district: "Атбасарский район", point: "КГУ «Полтавская средняя школа»", capacity: "40/-", contacts: "Лубенченко Лариса Ивановна, 87026996613", road: "Трасса «Кокшетау-Атбасар»"},
+            {id: 40, city: "с. Покровка", district: "Атбасарский район", point: "КГУ «Покровская средняя школа»", capacity: "25/-", contacts: "Дюсембаев Ерлан Мухамедьянович, 87712676050", road: "Трасса «Кокшетау-Атбасар»"},
+            {id: 41, city: "с. Бастау", district: "Атбасарский район", point: "КГУ «Средняя школа с.Бастау №1»", capacity: "30/-", contacts: "Журумбаева Айгуль Жумашовна, 87059842166", road: "Трасса «Алматы-Екатеринбург»"},
+            {id: 42, city: "с. Бастау", district: "Атбасарский район", point: "КГУ «Средняя школа с. Бастау №2»", capacity: "30/-", contacts: "Харахыз Бакытгуль, 87052948153", road: "Трасса «Алматы-Екатеринбург»"},
+            {id: 43, city: "с. Мариновка", district: "Атбасарский район", point: "КГУ «Мариновская средняя школа №1»", capacity: "15/-", contacts: "Шинжанов Баржаксы Казизханович, 87026182986", road: "Трасса «Алматы-Екатеринбург»"},
+            {id: 44, city: "с. Мариновка", district: "Атбасарский район", point: "КГУ «Мариновская средняя школа №2»", capacity: "10/-", contacts: "Берден Кайрат Кундакбайулы, 87022094795", road: "Трасса «Алматы-Екатеринбург»"},
+            {id: 45, city: "г. Атбасар", district: "Атбасарский район", point: "КГУ «Коррекционная школа-интернат №2»", capacity: "80/80", contacts: "Белинская Светлана Петровна, 87029647073", road: "Трасса «Алматы-Екатеринбург»"},
+            {id: 46, city: "г. Атбасар", district: "Атбасарский район", point: "КГУ «Средняя школа №6»", capacity: "60/-", contacts: "Ашимова Бибигуль Тулеубаевна, 87055968420", road: "Трасса «Алматы-Екатеринбург»"},
+            {id: 47, city: "г. Атбасар", district: "Атбасарский район", point: "Общежитие ГККП «Аграрно-индустриальный колледж»", capacity: "90/40", contacts: "Тюлебаев Аскербек Жамантаевич, 87071208139", road: "Трасса «Алматы-Екатеринбург»"},
+            {id: 48, city: "с. Магдалиновка", district: "Атбасарский район", point: "КГУ «Магдалиновская начальная школа»", capacity: "10/-", contacts: "Гузева Татьяна Сергеевна, 87024170492", road: "Трасса «Атбасар-Сочинское»"},
+            {id: 49, city: "с. Ново-Мариновка", district: "Атбасарский район", point: "КГУ «Ново - Мариновская средняя школа»", capacity: "15/15", contacts: "Омурбаева Лилия Владимировна, 87712821301", road: "Трасса «Атбасар-Сочинское»"},
+            {id: 50, city: "с. Адыр", district: "Атбасарский район", point: "КГУ «Адырская средняя школа»", capacity: "10/10", contacts: "Жакпарова Гульдана Нагметолловна, 87051675124", road: "Трасса «Алматы-Екатеринбург»"},
+            {id: 51, city: "с. Ново-Мариновка", district: "Атбасарский район", point: "Здание гостиницы ТОО «Агромар трейд»", capacity: "20/15", contacts: "Абжанова Жанна Туикпаевна, 87713717008", road: "А/д «Атбасар-Сочинское»"},
+            {id: 52, city: "с. Акана Курманова", district: "Атбасарский район", point: "Гостиница ТОО «Самарское-1»", capacity: "20/12", contacts: "Былкимов Ерлан Есенгулович, 87773264397", road: "А/д «Атбасар-Сочинское»"},
+            {id: 53, city: "с. Сергеевка", district: "Атбасарский район", point: "КГУ «Сергеевская средняя школа»", capacity: "10/-", contacts: "Амантаева Аяулы Каирбековна, 87771765067", road: "А/д «Атбасар-Кийма»"},
+            {id: 54, city: "с. Шуйское", district: "Атбасарский район", point: "КГУ «Шуйская средняя школа»", capacity: "15/-", contacts: "Садвокасова Татьяна Иванована, 87051554237", road: "А/д «Атбасар-Шуйское»"},
+            {id: 55, city: "с. Новосельское", district: "Атбасарский район", point: "КГУ «Новосельская средняя школа»", capacity: "15/-", contacts: "Радченко Анастасия, 87779564218", road: "А/д «Атбасар-Шуйское»"},
+            
+            // Аккольский район (14 пунктов)
+            {id: 56, city: "г. Акколь", district: "Аккольский район", point: "кафе «Ақ-Сұнқар»", capacity: "25/-", contacts: "Тургумбаева Алтынай Абуловна, 87024157062", road: "Трасса «Астана-Петропавловск»"},
+            {id: 57, city: "г. Акколь", district: "Аккольский район", point: "кафе «Шашлычный двор»", capacity: "20/-", contacts: "Шовкань Василий Александрович", road: "Трасса «Астана-Петропавловск»"},
+            {id: 58, city: "г. Акколь", district: "Аккольский район", point: "кафе «Домашняя кухня»", capacity: "30/-", contacts: "Пак Елена Вечеславовна, 87076916691", road: "Трасса «Астана-Петропавловск»"},
+            {id: 59, city: "г. Акколь", district: "Аккольский район", point: "кафе-гостиница «АЮ»", capacity: "15/15", contacts: "Айкенова Ирина Владимировна", road: "Трасса «Астана-Петропавловск»"},
+            {id: 60, city: "г. Акколь", district: "Аккольский район", point: "гостиница «Байтерек»", capacity: "10/10", contacts: "Баранкулова Гульден Камидулловна, 87012659262", road: "Трасса «Астана-Петропавловск»"},
+            {id: 61, city: "г. Акколь", district: "Аккольский район", point: "гостиница «Фабрика»", capacity: "20/20", contacts: "Меньшаев Юрий Анатольевич, 87024386116", road: "Трасса «Астана-Петропавловск»"},
+            {id: 62, city: "г. Акколь", district: "Аккольский район", point: "ГККП «Агротехнический колледж г.Акколь»", capacity: "100/50", contacts: "Уразов Арман Аманжолович, 87712447294", road: "Трасса «Астана-Петропавловск»"},
+            {id: 63, city: "г. Акколь", district: "Аккольский район", point: "КГУ «Общеобразовательная школа №3»", capacity: "75/50", contacts: "Бапар Гульжан, 87471715049", road: "Трасса «Астана-Петропавловск»"},
+            {id: 64, city: "г. Акколь", district: "Аккольский район", point: "ГККП «Районный дом культуры»", capacity: "200/-", contacts: "Шарипова Салима Халеловна, 87015924694", road: "Трасса «Астана-Петропавловск»"},
+            {id: 65, city: "с. Кенес", district: "Аккольский район", point: "КГУ «Общеобразовательная школа с. Кенес»", capacity: "50/20", contacts: "Канди Багшагуль, 87475191517", road: "А/д «Акколь-Степногорск»"},
+            {id: 66, city: "а. Азат", district: "Аккольский район", point: "КГУ «Общеобразовательная школа с. Азат»", capacity: "50/10", contacts: "Аманжол Кумысай, 87024930244", road: "А/д «Акколь-Степногорск»"},
+            {id: 67, city: "с. Новорыбинка", district: "Аккольский район", point: "КГУ «Общеобразовательная школа с. Новорыбинка»", capacity: "50/10", contacts: "Хажат Алма, 87473920565", road: "А/д «Акколь-Новорыбинка»"},
+            {id: 68, city: "с. Урюпинка", district: "Аккольский район", point: "КГУ «Общеобразовательная школа с. Урюпинка»", capacity: "50/15", contacts: "Самойлова Анастасия Алексеевна, 87718340774", road: "А/д «Акколь-Урюпинка»"},
+            {id: 69, city: "с. Наумовка", district: "Аккольский район", point: "КГУ «Общеобразовательная школа с. Наумовка»", capacity: "30/10", contacts: "Исенова Гульзейнеп Канатовна, 87056589481", road: "А/д «Акколь-Наумовка»"},
+            
+            // Аршалынский район (12 пунктов)
+            {id: 70, city: "п. Аршалы", district: "Аршалынский район", point: "КГУ «Общеобразовательная школа им. Жумабека Ташенова»", capacity: "80/-", contacts: "Байдильдина Гульнар Мерзахметова, 87786861230", road: "Трасса «Алматы-Екатеринбург»"},
+            {id: 71, city: "ст. Анар", district: "Аршалынский район", point: "КГУ «Средняя школа, ст. Анар»", capacity: "40/-", contacts: "Тыштыбаева Гульнара Бейсеновна, 87024846804", road: "Трасса «Алматы-Екатеринбург»"},
+            {id: 72, city: "с. Берсуат", district: "Аршалынский район", point: "КГУ «Средняя школа с. Берсуат»", capacity: "40/-", contacts: "Жакенова Сауле Закановна, 87754746759", road: "Трасса «Алматы-Екатеринбург»"},
+            {id: 73, city: "с. Жибек Жолы", district: "Аршалынский район", point: "КГУ «Средняя школа им. Кутпанулы с. ЖибекЖолы»", capacity: "150/-", contacts: "Туркестанбаева Акнур Арысбаевна, 87789624900", road: "Трасса «Алматы-Екатеринбург»"},
+            {id: 74, city: "с. Турген", district: "Аршалынский район", point: "КГУ «Средняя школа с. Турген»", capacity: "40/-", contacts: "Оспанова Кульбаршин Камдзеевна, 87013914716", road: "Трасса «Алматы-Екатеринбург»"},
+            {id: 75, city: "ст. Бабатай", district: "Аршалынский район", point: "КГУ «Общеобразовательная средняя школа ст. Бабатай»", capacity: "50/-", contacts: "Миралиев Бауржан Койшибекович, 87767763176", road: "А/д «Волгодоновка-Береке-Нововладимировка»"},
+            {id: 76, city: "с. Акбулак", district: "Аршалынский район", point: "КГУ «Центральная средняя школа с. Акбулак»", capacity: "30/-", contacts: "Субботина Ирина Васильевна, 87012302486", road: "А/д «Акбулак-Берсуат»"},
+            {id: 77, city: "с. Булаксай", district: "Аршалынский район", point: "КГУ «Н- Владимировская средняя школа с. Булаксай»", capacity: "50/-", contacts: "Хозаева Айжан Орынбековна, 87024086366", road: "А/д «Булаксай –Бабатай»"},
+            {id: 78, city: "с. Константиновка", district: "Аршалынский район", point: "КГУ «Средняя школа с. Константиновка»", capacity: "50/-", contacts: "Тыра Людмила Алексеевна, 87073806001", road: "А/д «Константиновка- Турген»"},
+            {id: 79, city: "с. Михайловка", district: "Аршалынский район", point: "КГУ «Средняя школа с. Михайловка»", capacity: "80/-", contacts: "Тыштыбаева Кымбат Дюсембековна, 87771807822", road: "А/д «Михайловка- Аршалы»"},
+            {id: 80, city: "с. Сарыоба", district: "Аршалынский район", point: "КГУ «Средняя школа с. Сары-оба»", capacity: "50/-", contacts: "Даирова Гульнар Сапаровна, 87014177993", road: "А/д «Сарыоба- Бабатай»"},
+            {id: 81, city: "с. Костомар", district: "Аршалынский район", point: "КГУ «Средняя школа с. Костомар»", capacity: "20/-", contacts: "Сагындыкова Сабира Аманжоловна, 87015946094", road: "А/д «Восточный обход г.Астана-ст Сарыоба»"},
+            
+            // Буландынский район (14 пунктов)
+            {id: 82, city: "с. Алаколь", district: "Буландынский район", point: "КГУ «Основная школа с. Алаколь»", capacity: "30/-", contacts: "Алибеков Талгат Байкенович, 87071047293", road: "Трасса «Астана-Петропавловск»"},
+            {id: 83, city: "с. Жанаталап", district: "Буландынский район", point: "КГУ «Начальная школа с. Жанаталап»", capacity: "20/-", contacts: "Оспанова Сымбат Жанабековна, 87021894695", road: "Трасса «Астана-Петропавловск»"},
+            {id: 84, city: "г. Макинск", district: "Буландынский район", point: "КГУ «Школа лицей №4 г.Макинск»", capacity: "50/50", contacts: "Нуртуган Серик, 87477335534", road: "Трасса «Астана-Петропавловск»"},
+            {id: 85, city: "с. Шубарагаш", district: "Буландынский район", point: "КГУ «Средняя школа с. Шубарагаш»", capacity: "50/-", contacts: "Рыблер Иван Александрович, 87761298853", road: "А/д «Вознесенка-Новобратское»"},
+            {id: 86, city: "с. Журавлевка", district: "Буландынский район", point: "Сельская врачебная амбулатория", capacity: "30/-", contacts: "Ногайко Ольга Владимировна, 87774739715", road: "А/д «Макинск-Жалтыр»"},
+            {id: 87, city: "с. Аккайын", district: "Буландынский район", point: "КГУ «Основная школа с. Аккайын»", capacity: "30/-", contacts: "Капезов Ерболат Амантаевич, 87771001652", road: "А/д «Макинск-Жалтыр»"},
+            {id: 88, city: "с. Алтынды", district: "Буландынский район", point: "КГУ «Общеобразовательная школа с. Алтынды»", capacity: "50/-", contacts: "Кийнабаева Акмарал Аманкуловна, 87779535238", road: "А/д «Каратал-Никольское»"},
+            {id: 89, city: "с. Токтамыс", district: "Буландынский район", point: "КГУ «Общеобразовательная школа с. Токтымыс»", capacity: "50/-", contacts: "Мамчур Марина Михайловна, 87051728532", road: "А/д «Вознесенка- Новобратское»"},
+            {id: 90, city: "с. Новодонецкое", district: "Буландынский район", point: "КГУ «Новодонецкая основная школа»", capacity: "50/-", contacts: "Дъяченко Раиса Николаевна, 87779510647", road: "А/д «Макинск-Жалтыр»"},
+            {id: 91, city: "с. Партизанка", district: "Буландынский район", point: "Партизанский сельский клуб", capacity: "30/-", contacts: "Ильина Елена Ивановна, 87773068266", road: "А/д «Вознесенка- Новобратское»"},
+            {id: 92, city: "с. Новобратское", district: "Буландынский район", point: "ОШ с. Новобратское, ФАП с. Новобратское, здание ТОО «СХП Новобратское»", capacity: "35/35", contacts: "Раимбеков Бахытбек Есимбекович, 87771155215", road: "А/д «Вознесенка- Новобратское»"},
+            {id: 93, city: "с. Вознесенка", district: "Буландынский район", point: "КГУ «Общеобразовательная школа c. Вознесенска»", capacity: "50/-", contacts: "Стихиляс Татьяна Владимировна, 87716241428", road: "А/д «Макинск-Жалтыр»"},
+            {id: 94, city: "с. Капитоновка", district: "Буландынский район", point: "КГУ «Общеобразовательная школа с. Капитоновка»", capacity: "50/-", contacts: "Казкенова Алмагуль Калиулаевна, 87773066133", road: "А/д «Вознесенка-Капитоновка»"},
+            {id: 95, city: "с. Никольское", district: "Буландынский район", point: "Никольская врачебная амбулатория", capacity: "30/2", contacts: "Шахатова Жанна Кабеновна, 87784254184", road: "А/д «Ултуган-Ельтай-Никольское»"},
+            
+            // Бурабайский район (18 пунктов)
+            {id: 96, city: "г. Щучинск", district: "Бурабайский район", point: "КГУ «Школа-интернат № 10 г. Щучинск»", capacity: "20/-", contacts: "Хасенова Асель Усербаевна, 87055837622", road: "Трасса «Астана-Петропавловск»"},
+            {id: 97, city: "г. Щучинск", district: "Бурабайский район", point: "КГУ «Школа-гимназия № 9 г. Щучинск»", capacity: "20/-", contacts: "Кушекова Бибигуль Куанышевна, 87755630195", road: "Трасса «Астана-Петропавловск»"},
+            {id: 98, city: "г. Щучинск", district: "Бурабайский район", point: "Общежитие ГККП «Высший технический колледж»", capacity: "16/-", contacts: "Бектасова Назым Кабдушевна, 87713755552", road: "Трасса «Астана-Петропавловск»"},
+            {id: 99, city: "г. Щучинск", district: "Бурабайский район", point: "Общежитие ГКП на ПХВ «Высший педагогический колледж»", capacity: "20/-", contacts: "Бичун Галина Викторовна, 87012665836", road: "Трасса «Астана-Петропавловск»"},
+            {id: 100, city: "г. Щучинск", district: "Бурабайский район", point: "Общежитие ГККП «Высший колледж лесного хозяйства, экологии и туризма»", capacity: "15/-", contacts: "Кожаков Азамат Маратович, 87023779832", road: "Трасса «Астана-Петропавловск»"},
+            {id: 101, city: "г. Щучинск", district: "Бурабайский район", point: "ГККП «Районный дом культуры»", capacity: "60/-", contacts: "Жамантыкова Айсулу Кабденовна, 87778117898", road: "Трасса «Астана-Петропавловск»"},
+            {id: 102, city: "а. Атамекен", district: "Бурабайский район", point: "КГУ «Общеобразовательная школа с. Атамекен»", capacity: "15/-", contacts: "Зикирин Жангельды Ертостикович, 87071441797", road: "Трасса «Астана-Петропавловск»"},
+            {id: 103, city: "с. Кенесары", district: "Бурабайский район", point: "КГУ «Общеобразовательная школа имени Сатпаева с. Кенесары»", capacity: "15/-", contacts: "Абжанов Руслан Маратович, 87029531987", road: "Заезд к с. Кенесары"},
+            {id: 104, city: "с. Наурызбай батыра", district: "Бурабайский район", point: "КГУ «Основная средняя школа имени Наурызбай батыра»", capacity: "15/-", contacts: "Тлеубергенова Жулдыз Толегеновна, 87777534245", road: "А/д «Бурабай – Ильичевка»"},
+            {id: 105, city: "с. Веденовка", district: "Бурабайский район", point: "КГУ «Общеобразовательная школа с. Веденовка»", capacity: "15/-", contacts: "Шаяхметов Каирбек Матович, 87770394829", road: "А/д «Щучинск- Веденовка»"},
+            {id: 106, city: "с. Златополье", district: "Бурабайский район", point: "КГУ «Общеобразовательная школа с. Златополье»", capacity: "15/-", contacts: "Кудабаев Ерден Талгатович, 87051373756", road: "А/д «Щучинск-Веденовка»"},
+            {id: 107, city: "с. Зеленый Бор", district: "Бурабайский район", point: "КГУ «Школа-гимназия с. Зеленый бор»", capacity: "15/-", contacts: "Рахимжанов Мейрамбек Кудайбергенович, 87782133012", road: "А/д «Бурабай – Ильичевка»"},
+            {id: 108, city: "с. Акылбай", district: "Бурабайский район", point: "КГУ «Общеобразовательная школа с. Акылбай»", capacity: "10/-", contacts: "Кудабаев Канат Есимович, 87014848192", road: "А/д «Щучинск – Кызылагаш»"},
+            {id: 109, city: "с. Катарколь", district: "Бурабайский район", point: "ГККП «Высший колледж ветеринарии и биотехнологии»", capacity: "20/-", contacts: "Жансеитова Айнура Сансызбаевна, 87753092556", road: "А/д «Щучинск –Катарколь»"},
+            {id: 110, city: "с. Успеноюрьевка", district: "Бурабайский район", point: "КГУ «Общеобразовательная школа с. Успеноюрьевка»", capacity: "15/-", contacts: "Кононец Дмитрий Викторович, 87052928008", road: "А/д «Щучинск- Николаевка»"},
+            {id: 111, city: "с. Урумкай", district: "Бурабайский район", point: "КГУ «Общеобразовательная школа с. Урумкай»", capacity: "15/-", contacts: "Дағыстан Алтынбек Дағыстанұлы, 87051032720", road: "А/д «Щучинск- Николаевка»"},
+            {id: 112, city: "с. Карашилик", district: "Бурабайский район", point: "КГУ «Общеобразовательная школа с. Карашилик»", capacity: "10/-", contacts: "Уалиева Махаббат Батырбековна, 87756592098", road: "А/д «Щучинск- Николаевка»"},
+            {id: 113, city: "с. Мадениет", district: "Бурабайский район", point: "КГУ «Общеобразовательная школа им. Есмагамбета Исмаилова с. Мадениет»", capacity: "15/-", contacts: "Казакенова Лилия Оралхановна, 87056645340", road: "А/д «Бурабай- Мадениет»"},
+            
+            // Район Биржан сал (7 пунктов)
+            {id: 114, city: "с. Мамай", district: "Биржан сал", point: "Сельский клуб с. Мамай", capacity: "20/-", contacts: "Сабитов Кайргельды Темирбулатович, 87772056496", road: "Трасса «Макинск – Степногорск»"},
+            {id: 115, city: "с. Сауле", district: "Биржан сал", point: "Сельский клуб с. Сауле", capacity: "20/-", contacts: "Альжанов Женис Анасович, 87054297290", road: "Трасса «Макинск-Степногорск»"},
+            {id: 116, city: "с. Макинка", district: "Биржан сал", point: "Сельский клуб с. Макинка", capacity: "30/-", contacts: "Прохорова Елена Владимировна, 87757600383", road: "Трасса «Астана-Петропавловск»"},
+            {id: 117, city: "с. Каратал", district: "Биржан сал", point: "ИП «Чеканов В.С.» АЗС «Элив»", capacity: "20/-", contacts: "Чеканов Владимир Семенович, 87015390056", road: "Трасса «Астана-Петропавловск»"},
+            {id: 118, city: "с. Ульги", district: "Биржан сал", point: "Сельский клуб с. Ульги", capacity: "30/-", contacts: "Даулет Мухтархан, 87056544044", road: "А/д «Щучинск-Степняк-Валиханово»"},
+            {id: 119, city: "г. Степняк", district: "Биржан сал", point: "Дом культуры имени Биржан сал", capacity: "30/-", contacts: "Ибраева Анар Тендыковна, 87715165530", road: "А/д «Щучинск-Степняк-Валиханово»"},
+            {id: 120, city: "с. Енбекшильдер", district: "Биржан сал", point: "Сельский клуб с. Енбекшильдерское", capacity: "20/-", contacts: "Торгаутова Жанна Махмудкызы, 87716977279", road: "А/д «Щучинск-Степняк-Валиханово»"},
+            
+            // Есильский район (14 пунктов)
+            {id: 121, city: "с. Красивое", district: "Есильский район", point: "КГУ «Красивинская общеобразовательная школа»", capacity: "140/-", contacts: "Биндевальд Ольга Николаевна", road: "Трасса «Жаксы-Есиль-Бузулук»"},
+            {id: 122, city: "с. Кумай", district: "Есильский район", point: "КГУ «Кумайская начальная школа»", capacity: "40/-", contacts: "Муса Еркегуль, 87755272395", road: "Трасса «Жаксы-Есиль-Бузулук»"},
+            {id: 123, city: "с. Двуречное", district: "Есильский район", point: "КГУ «Двуреченская общеобразовательная школа»", capacity: "135/30", contacts: "Илюбаева Динара Ташетовна, 87055835001", road: "Трасса «Жезказган-Петропавловск»"},
+            {id: 124, city: "с. Московское", district: "Есильский район", point: "КГУ «Московская общеобразовательная школа»", capacity: "140/10", contacts: "Туреходжаев Бахытали Батыралиевич", road: "Трасса «Сурган-Аулеколь-Костанай»"},
+            {id: 125, city: "г. Есиль", district: "Есильский район", point: "кафе «Темерлан»", capacity: "70/-", contacts: "Альжанова Айгуль Тасымова, 87019796011", road: "Трасса «Жаксы-Есиль-Бузулук»"},
+            {id: 126, city: "с. Бузулук", district: "Есильский район", point: "КГУ «Бузулукская общеобразовательная школа»", capacity: "120/-", contacts: "Ахметова Динара Куанышевна, 87785451376", road: "Трасса «Жаксы-Есиль-Бузулук»"},
+            {id: 127, city: "с. Курское", district: "Есильский район", point: "КГУ «Курская общеобразовательная школа»", capacity: "150/-", contacts: "Гузенко Светлана Юрьевна, 87756100346", road: "Трасса «Джезказган-Петропавловск»"},
+            {id: 128, city: "с. Сурган", district: "Есильский район", point: "КГУ «Сурганская общеобразовательная школа»", capacity: "115/-", contacts: "Жумагулова Сандугаш Аубакировна, 87474219787", road: "Трасса «Сурган-Аулеколь-Костанай»"},
+            {id: 129, city: "с. Аксай", district: "Есильский район", point: "КГУ «Аксайская общеобразовательная школа»", capacity: "150/-", contacts: "Ахамбаева Надежда Владимировна, 87087244767", road: "Трасса «Жаксы-Есиль-Бузулук»"},
+            {id: 130, city: "с. Аксай", district: "Есильский район", point: "ИП кафе «Султан»", capacity: "30/30", contacts: "Султанов Бейбут Кизакович, 87026375926", road: "Трасса «Жаксы-Есиль-Бузулук»"},
+            {id: 131, city: "г. Есиль", district: "Есильский район", point: "ресторан «Рахат»", capacity: "60/60", contacts: "Оразбеков Абай Шабамбаевич, 87014006315", road: "Трасса «Жаксы-Есиль-Бузулук»"},
+            {id: 132, city: "г. Есиль", district: "Есильский район", point: "ГККП «Агротехнический колледж г. Есиль»", capacity: "250/-", contacts: "Гойко Наталья Цезаревна, 87021952412", road: "Трасса «Жаксы-Есиль-Бузулук»"},
+            {id: 133, city: "г. Есиль", district: "Есильский район", point: "ТОО «КАЖсервис» ДЭУ-4", capacity: "10/10", contacts: "Иваненко Сергей Викторович, 87711195519", road: "Трасса «Жаксы-Есиль-Бузулук»"},
+            {id: 134, city: "с. Калачи", district: "Есильский район", point: "КГУ «Калачевская начальная школа»", capacity: "35/-", contacts: "Лаптева Ирина Александровна", road: "А/д «Чистополье-Еленовка»"},
+            
+            // Ерейментауский район (14 пунктов)
+            {id: 135, city: "с. Тургай", district: "Ерейментауский район", point: "«Тургайский сельский клуб»", capacity: "40/-", contacts: "Лятиев Сагындык Ажбиевич, 87023284766", road: "Трасса «Астана-Щидерты»"},
+            {id: 136, city: "с. Новомарковка", district: "Ерейментауский район", point: "«Сельский клуб с. Майлан»", capacity: "30/-", contacts: "Матаева Гуля Токеновна, 87719021670", road: "Трасса «Астана-Щидерты»"},
+            {id: 137, city: "с. Уленты", district: "Ерейментауский район", point: "«Улентинский сельский клуб»", capacity: "20/-", contacts: "Узденова Татьяна Анатольевна, 87773145229", road: "Трасса «Астана-Щидерты»"},
+            {id: 138, city: "г. Ерейментау", district: "Ерейментауский район", point: "ГККП «Дом Культуры имени Умбетей Жырау»", capacity: "90/-", contacts: "Алдасугуров Алдияр Мерекеевич, 87055810060", road: "Трасса «Астана-Щидерты»"},
+            {id: 139, city: "с. Селетинское", district: "Ерейментауский район", point: "«Селетинский сельский клуб»", capacity: "150/-", contacts: "Шапай Ерлан, 87713746159", road: "а/д «Аксу-Макинск-Тургай»"},
+            {id: 140, city: "с. Бестогай", district: "Ерейментауский район", point: "«Бестогайский сельский клуб»", capacity: "120/-", contacts: "Жанбырбаева Райхан Суюндыкова, 87759910659", road: "а/д «Аксу-Макинск-Тургай»"},
+            {id: 141, city: "с. Байсары", district: "Ерейментауский район", point: "«Байсаринский сельский клуб»", capacity: "65/-", contacts: "Сапаргали Айнур Орынбаевна, 87750496118", road: "а/д «Аксу-Макинск-Тургай»"},
+            {id: 142, city: "с. Жанажол", district: "Ерейментауский район", point: "«Жанажольский сельский клуб»", capacity: "70/-", contacts: "Жукенова Айгуль Ашкеновна, 87473735410", road: "а/д «Аксу-Макинск-Тургай»"},
+            {id: 143, city: "с. Ажы", district: "Ерейментауский район", point: "«Ажынский сельский клуб»", capacity: "60/-", contacts: "Сапарова Торгын Советовна, 87027171264", road: "Трасса «Астана-Щидерты»"},
+            {id: 144, city: "с. Малтабар", district: "Ерейментауский район", point: "«Малтабарский сельский клуб»", capacity: "80/-", contacts: "Табулдина Жанна Умарбековна, 87771242112", road: "Трасса «Астана-Щидерты»"},
+            {id: 145, city: "с. Еркеншилик", district: "Ерейментауский район", point: "«Еркеншиликский сельский Дом культуры»", capacity: "30/-", contacts: "Фомина Александра Валерьевна, 87754106719", road: "А/д «Еркеншелик-Куншалган»"},
+            {id: 146, city: "с. Куншалган", district: "Ерейментауский район", point: "«Куншалганский сельский клуб»", capacity: "20/-", contacts: "Санакова Сауле Муратбековна, 87058074552", road: "А/д «Еркеншелик-Куншалган»"},
+            {id: 147, city: "с. Аксуат", district: "Ерейментауский район", point: "«Аксуатский сельский клуб»", capacity: "15/-", contacts: "Нашева Аягоз Суиендиковна, 87761483716", road: "А/д «Ерейментау-Аршалы»"},
+            {id: 148, city: "с. Енбек", district: "Ерейментауский район", point: "«Енбекский сельский клуб»", capacity: "50/-", contacts: "Какимова Динара Бакытжановна, 87712445257", road: "А/д «Тайбай-Еркеншилик»"},
+            
+            // Егиндыкольский район (12 пунктов)
+            {id: 149, city: "с. Егиндыколь", district: "Егиндыкольский район", point: "КГУ «Егиндыкольская средняя школа № 1»", capacity: "100/-", contacts: "Балтабаева Динара Куттыбаевна, 87770387604", road: "А/д «Новочеркаское-Жолан»"},
+            {id: 150, city: "с. Егиндыколь", district: "Егиндыкольский район", point: "КГУ «Егиндыкоьская средняя школа № 2»", capacity: "105/-", contacts: "Бутьковец Светлана Ивановна, 87718300370", road: "А/д «Новочеркаское –Жолан»"},
+            {id: 151, city: "с. Бауманское", district: "Егиндыкольский район", point: "КГУ «Бауманская средняя школа»", capacity: "85/-", contacts: "Есенбаева Алмагуль Касеновна, 87774735730", road: "А/д «Егиндыколь-Жантеке»"},
+            {id: 152, city: "с. Коркем", district: "Егиндыкольский район", point: "КГУ «Коркемская общеобразовательная школа»", capacity: "50/-", contacts: "Мухамедьярова Шынар Жаксыкельдиновна, 87712673411", road: "А/д «Полтавское-Буревестник»"},
+            {id: 153, city: "с. Тоганас", district: "Егиндыкольский район", point: "КГУ «Жанаконусская общеобразовательная школа»", capacity: "80/-", contacts: "Бокишев Талгат Кабдулаевич, 87776527251", road: "А/д «Новочеркаское-Жолан»"},
+            {id: 154, city: "с. Полтавское", district: "Егиндыкольский район", point: "КГУ «Алакольская средняя школа»", capacity: "100/-", contacts: "Рубец Оксана Витальевна, 87753013339", road: "А/д «Полтавское-Буревестник»"},
+            {id: 155, city: "с. Узынколь", district: "Егиндыкольский район", point: "КГУ «Ушаковская средняя школа»", capacity: "100/-", contacts: "Трысбаева Асель Еркиновна, 87056311702", road: "А/д «Новочеркаское-Жолан»"},
+            {id: 156, city: "с. Коржинколь", district: "Егиндыкольский район", point: "КГУ «Днепропетровская средняя школа»", capacity: "60/-", contacts: "Ауезов Шынасыл Шуйиншалиевич, 87782628383", road: "А/д «Егиндыколь-Жантеке»"},
+            {id: 157, city: "с. Спиридоновка", district: "Егиндыкольский район", point: "КГУ «Армавирская средняя школа»", capacity: "100/-", contacts: "Хаматханова Зухра Савиевна, 87015622430", road: "А/д «Егиндыколь-Абай»"},
+            {id: 158, city: "с. Буревестник", district: "Егиндыкольский район", point: "Акимат с. Буревестник", capacity: "10/-", contacts: "Аятхан Айболат, 87758428499", road: "А/д «Егиндыколь-Жолан»"},
+            {id: 159, city: "с/о Жалманкулак", district: "Егиндыкольский район", point: "Акимат с/о Жалманкулак", capacity: "12/-", contacts: "Ахметов Жолымбет Зейнулгабиденович, 87055813263", road: "А/д «Егиндыколь-Жулдыз»"},
+            {id: 160, city: "с. Абай", district: "Егиндыкольский район", point: "Акимат с. Абай", capacity: "15/-", contacts: "Хаматханова Илюся Рафитовна, 87752098248", road: "А/д «Егиндыколь-Абай»"},
+            
+            // Зерендинский район (26 пунктов)
+            {id: 161, city: "с. Айдабол", district: "Зерендинский район", point: "КГУ «Общеобразовательная школа с. Айдабол»", capacity: "100/-", contacts: "Байконурова Батима Амангельдиновна", road: "Трасса «Кокшетау-Атбасар»"},
+            {id: 162, city: "с. Акколь", district: "Зерендинский район", point: "Сельский клуб с. Акколь", capacity: "80/-", contacts: "Бектурганов Самат Отанович", road: "Трасса «Кокшетау-Щучинск»"},
+            {id: 163, city: "с. Алексеевка", district: "Зерендинский район", point: "КГУ «Общеобразовательная школа с. Алексеевка №1»", capacity: "80/-", contacts: "Шалашун Людмила Андреевна", road: "Трасса «Кокшетау-Петропавловск»"},
+            {id: 164, city: "с. Зеренда", district: "Зерендинский район", point: "ТОО Рейн СТО МОТЕЛЬ", capacity: "60/15", contacts: "Сусин Александр Владимирович", road: "Трасса «Кокшетау-Атбасар»"},
+            {id: 165, city: "с. Еленовка", district: "Зерендинский район", point: "КГУ «Общеобразовательная школа с. Еленовка»", capacity: "80/-", contacts: "Нуртазина Алма Макжановна", road: "Трасса «Кокшетау-Костанай»"},
+            {id: 166, city: "с. Викторовка", district: "Зерендинский район", point: "КГУ «Общеобразовательная школа с. Викторовка»", capacity: "100/-", contacts: "Касенова Жамиля Жаркымбаевна", road: "Трасса «Кокшетау-Атбасар»"},
+            {id: 167, city: "с. Айдарлы", district: "Зерендинский район", point: "КГУ «Общеобразовательная школа с.Айдарлы»", capacity: "50/-", contacts: "Мәнәп Айдын Саматұлы", road: "Трасса «Кокшетау-Атбасар»"},
+            {id: 168, city: "с. Красиловка", district: "Зерендинский район", point: "КГУ «Начальная школа с. Красиловка»", capacity: "30/-", contacts: "Жуковская Ирина Ивановна", road: "Трасса «Кокшетау-Атбасар»"},
+            {id: 169, city: "с. Ивановка", district: "Зерендинский район", point: "КГУ «Начальная школа с.Ивановка»", capacity: "50/-", contacts: "Касымова Бибигайша Сакеновна", road: "Трасса «Кокшетау-Щучинск»"},
+            {id: 170, city: "с. Садовое", district: "Зерендинский район", point: "КГУ «Общеобразовательная школа с. Садовое»", capacity: "80/-", contacts: "Досумова Айгуль Сабыровна", road: "Трасса «Кокшетау-Костанай»"},
+            {id: 171, city: "ст. Чаглинка", district: "Зерендинский район", point: "КГУ «Общеобразовательная школа ст. Чаглинка»", capacity: "60/-", contacts: "Аукарова Бакытжан Серикбаевна", road: "Трасса «Кокшетау-Петропавловск»"},
+            {id: 172, city: "п. Красный Кордон", district: "Зерендинский район", point: "КГУ «Общеобразовательная школа с. Красный Кордон»", capacity: "50/-", contacts: "Соболев Андрей Владимирович", road: "А/д «Зеренда-Байтерек»"},
+            {id: 173, city: "с. Байтерек", district: "Зерендинский район", point: "КГУ «Общеобразовательная школа с. Байтерек»", capacity: "60/-", contacts: "Нұршәріп Сәндібек", road: "А/д «Зеренда-Байтерек»"},
+            {id: 174, city: "с. им. Канай би", district: "Зерендинский район", point: "КГУ «Общеобразовательная школа с.Канай би»", capacity: "50/-", contacts: "Акмурова Раушан Кабуловна", road: "А/д «М.Габдуллина-Игилик»"},
+            {id: 175, city: "с. Иглик", district: "Зерендинский район", point: "КГУ «Общеобразовательная школа с. Иглик»", capacity: "60/-", contacts: "Егубаева Гульзат Кожековна", road: "А/д «М.Габдуллина-Игилик»"},
+            {id: 176, city: "с. Приречное", district: "Зерендинский район", point: "КГУ «Общеобразовательная школа с. Приречное»", capacity: "100/-", contacts: "Жетписова Мариям Сурагановна", road: "А/д «Чаглинка-Павловка»"},
+            {id: 177, city: "с. Оркен", district: "Зерендинский район", point: "КГУ «Общеобразовательная школа с. Оркен»", capacity: "100/-", contacts: "Талдин Жандос Серикович", road: "А/д «Алексеевка-Озен»"},
+            {id: 178, city: "с. Озен", district: "Зерендинский район", point: "КГУ «Общеобразовательная школа с. Оркен»", capacity: "80/-", contacts: "Бектурганова Гульбаршин Бексултановна", road: "А/д «Алексеевка-Озен»"},
+            {id: 179, city: "ст. Азат", district: "Зерендинский район", point: "КГУ «Общеобразовательная школа ст. Азат»", capacity: "60/-", contacts: "Ермуханов Руслан Серикович", road: "А/д «Алексеевка-Озен»"},
+            {id: 180, city: "п. Бирлестык", district: "Зерендинский район", point: "КГУ «Общеобразовательная школа с. Бирлестик»", capacity: "50/-", contacts: "Есмагулова Лалагуль Кабдуллиновна", road: "А/д «Кызылсая-Васильковка»"},
+            {id: 181, city: "с. им. С.Сейфуллина", district: "Зерендинский район", point: "КГУ «Общеобразовательная школа с. С.Сейфуллино»", capacity: "40/-", contacts: "Тлеужанов Талгат Бексултанович", road: "А/д «Кызылсая-Васильковка»"},
+            {id: 182, city: "с. Симферополь", district: "Зерендинский район", point: "КГУ «Общеобразовательная школа с. Симферополь»", capacity: "50/-", contacts: "Искаков Базарбек Мамзинович", road: "А/д «Симферополь-Жолдыбай»"},
+            {id: 183, city: "с. Жолдыбай", district: "Зерендинский район", point: "КГУ «Общеобразовательная школа с. Жолдыбай»", capacity: "40/-", contacts: "Бекишов Ардак Болатович", road: "А/д «Симферополь-Жолдыбай»"},
+            {id: 184, city: "с. Ортагаш", district: "Зерендинский район", point: "КГУ «Общеобразовательная школа с. Ортаагаш»", capacity: "50/-", contacts: "Каирбай Бахытбек Хасенович", road: "А/д «Зеренда-Щучинск»"},
+            {id: 185, city: "с. Акадыр", district: "Зерендинский район", point: "КГУ «Общеобразовательная школа с. Акадыр»", capacity: "70/-", contacts: "Нуршарип Жәнібек", road: "А/д «Кокшетау-Атбасар – Ескенежал»"},
+            {id: 186, city: "с. Ескенежал", district: "Зерендинский район", point: "КГУ «Общеобразовательная школа с. Ескенежал»", capacity: "50/-", contacts: "Мұрат Нұрсауле", road: "А/д «Кокшетау-Атбасар – Ескенежал»"},
+            
+            // Жаркаинский район (14 пунктов)
+            {id: 187, city: "с. Пятигорское", district: "Жаркаинский район", point: "КГУ «Основная средняя школа с. Пятигорское»", capacity: "10/-", contacts: "Сидоренко Ольга Михайловна, 87758980639", road: "Трасса «Петропавловск-Жезказган»"},
+            {id: 188, city: "г. Державинск", district: "Жаркаинский район", point: "КГУ «Общеобразовательная школа имени Николая Островского г. Державинск»", capacity: "40/-", contacts: "Шегебаева Рыскельды Тохтаровна, 87021431768", road: "Трасса «Петропавловск-Жезказган»"},
+            {id: 189, city: "г. Державинск", district: "Жаркаинский район", point: "КГУ «Общеобразовательная школа имени Акпана Укубаева г. Державинск»", capacity: "30/30", contacts: "Силеухадыр Айбек, 87713757607", road: "Трасса «Петропавловск-Жезказган»"},
+            {id: 190, city: "г. Державинск", district: "Жаркаинский район", point: "ГККП «Жаркаинский районный дом культуры»", capacity: "100/-", contacts: "Есмурзин Нуржан Куандыкович, 87716873175", road: "Трасса «Петропавловск-Жезказган»"},
+            {id: 191, city: "г. Валиханово", district: "Жаркаинский район", point: "КГУ «Общеобразовательная школа с. Валиханово»", capacity: "50/-", contacts: "Даулетбекова Светлана Шариповна, 87055500979", road: "Трасса «Петропавловск-Жезказган»"},
+            {id: 192, city: "с. Кенское", district: "Жаркаинский район", point: "КГУ «Основная средняя школа с. Кенское»", capacity: "20/-", contacts: "Какенова Сулушаш Советовна, 87779521674", road: "Трасса «Петропавловск-Жезказган»"},
+            {id: 193, city: "с. Гастелло", district: "Жаркаинский район", point: "КГУ «Общеобразовательная школа с. Гастелло»", capacity: "25/-", contacts: "Кажгалиева Дарина Докбергеновна, 87776060965", road: "Трасса «Петропавловск-Жезказган»"},
+            {id: 194, city: "Жанадалинский с.о.", district: "Жаркаинский район", point: "ГУ «Аппарат акима Жанадалинского сельского округа (актовый зал)", capacity: "20/-", contacts: "Сагынбаев Канат Кобегенович, 87013898682", road: "Трасса «Петропавловск-Жезказган»"},
+            {id: 195, city: "с. Нахимовка", district: "Жаркаинский район", point: "ГУ «Аппарат акима Нахимовского сельского округа»", capacity: "15/-", contacts: "Жусупова Жанна Сабыржановна, 87770353337", road: "А/д «Державинск-Кумсуат»"},
+            {id: 196, city: "с. Костычево", district: "Жаркаинский район", point: "Общежитие ТОО «им. Костычева»", capacity: "15/15", contacts: "Байдильдин Гафурбек Анапиянович, 87056561516", road: "А/д «Кенское-Донское-Костычево»"},
+            {id: 197, city: "с. Львовское", district: "Жаркаинский район", point: "КГУ «Начальная школа с. Львовское»", capacity: "20/-", contacts: "Бимагамбетов Еспол Коксаевич, 87712540660", road: "А/д «Державинск- Кумсуат»"},
+            {id: 198, city: "с. Тассуат", district: "Жаркаинский район", point: "КГУ «Начальная школа с. Тассуат»", capacity: "10/-", contacts: "Сатыбалдина Салима Байдырахмановна, 87761273883", road: "А/д «Жаксы-Державинск»"},
+            {id: 199, city: "с. Зерноград", district: "Жаркаинский район", point: "КГУ «Основная средняя школа с. Зерноград»", capacity: "20/-", contacts: "Лузина Елена Хамбердовна, 87029162416", road: "А/д «Бирсуат- Тастыталды»"},
+            {id: 200, city: "с. Далабай", district: "Жаркаинский район", point: "КГУ «Основная средняя школа с. Далабай»", capacity: "15/-", contacts: "Амиргазина Толкын Мукатовна, 87775110047", road: "А/д «Жаксы-Державинск»"},
+            
+            // Жаксынский район (23 пункта)
+            {id: 201, city: "с. Жаксы", district: "Жаксынский район", point: "КГУ «Общеобразовательная школа №1 с. Жаксы»", capacity: "50/-", contacts: "Исмайлова Адеми Хамитбековна, 87771820153", road: "трасса «Алматы – Екатеринбург»"},
+            {id: 202, city: "с. Жаксы", district: "Жаксынский район", point: "КГУ «Общеобразовательная школа №2 с. Жаксы»", capacity: "50/-", contacts: "Карибаев Женис Саянулы, 87058515767", road: "трасса «Алматы – Екатеринбург»"},
+            {id: 203, city: "с. Жаксы", district: "Жаксынский район", point: "ГКП на ПХВ «Жаксынская районная больница»", capacity: "30/30", contacts: "Нуралина Эльмира Ануарбековна, 87052289244", road: "трасса «Алматы – Екатеринбург»"},
+            {id: 204, city: "с. Перекатное", district: "Жаксынский район", point: "КГУ «Общеобразовательная школа с. Перекатное»", capacity: "50/-", contacts: "Серикбаева Балжан Тулегеновна, 87056509465", road: "трасса «Алматы – Екатеринбург»"},
+            {id: 205, city: "с. Тарасовка", district: "Жаксынский район", point: "КГУ «Общеобразовательная школа с. Тарасовка»", capacity: "50/-", contacts: "Бурчиц Александра Юрьевна, 87716042173", road: "трасса «Алматы – Екатеринбург»"},
+            {id: 206, city: "с. Жаксы", district: "Жаксынский район", point: "ИП «Салтанат» (придорожное кафе и гостиница)", capacity: "15/15", contacts: "Жусупова Салтанат Кажымуратовна, 87054267478", road: "1 км трассы «Жаксы-Есиль-Бузулук»"},
+            {id: 207, city: "с. Жаксы", district: "Жаксынский район", point: "ТОО «Спортивная школа им. Т.Уалиева» (гостиница)", capacity: "30/30", contacts: "Молдыбаева Гульмира Сайлауовна, 87713758222", road: "трасса «Алматы – Екатеринбург»"},
+            {id: 208, city: "с. Жаксы", district: "Жаксынский район", point: "ГККП «Районный дом культуры»", capacity: "40/-", contacts: "Куанышпаева Жазира Жаксылыковна, 87053144969", road: "трасса «Алматы – Екатеринбург»"},
+            {id: 209, city: "с. Жана- Кийма", district: "Жаксынский район", point: "КГУ «Общеобразовательная школа им. Г. Абдрахманова с. Жана Кийма»", capacity: "50/-", contacts: "Абдуалиева Каракоз Ериковна, 87775198045", road: "А/д «Атбасар –Кийма»"},
+            {id: 210, city: "с. Кийма", district: "Жаксынский район", point: "КГУ «Общеобразовательная школа имени Кабдеша Шардагуловича Ускенбаева с. Кийма»", capacity: "50/-", contacts: "Токмурзина Гульбаршин Кубиевна, 87770398784", road: "А/д «Атбасар – Кийма»"},
+            {id: 211, city: "с. Ишимское", district: "Жаксынский район", point: "КГУ «Общеобразовательная школа с. Ишимское»", capacity: "50/-", contacts: "Адырбаева Гулим Айткожановна, 87785023408", road: "А/д «Жаксы – Державинск»"},
+            {id: 212, city: "с. Запорожье", district: "Жаксынский район", point: "КГУ «Общеобразовательная школа с. Запорожье»", capacity: "50/-", contacts: "Байдусенов Ерлан Рашидович, 87718042808", road: "А/д «Жаксы – Державинск»"},
+            {id: 213, city: "с. Лозовое", district: "Жаксынский район", point: "КГУ «Общеобразовательная школа с. Лозовое»", capacity: "50/-", contacts: "Журавецкая Инна Андреевна, 87781273781", road: "А/д «Жаксы – Державинск»"},
+            {id: 214, city: "с. Подгорное", district: "Жаксынский район", point: "КГУ «Общеобразовательная школа с. Подгорное»", capacity: "50/-", contacts: "Абай Алтынгул, 87715751702", road: "А/д «Жаксы – Державинск»"},
+            {id: 215, city: "с. Белагаш", district: "Жаксынский район", point: "КГУ «Общеобразовательная школа с. Белагаш»", capacity: "50/-", contacts: "Ергалиева Айгуль Ермухановна, 87055875313", road: "А/д «Жаксы – Державинск»"},
+            {id: 216, city: "с. Беловодское", district: "Жаксынский район", point: "КГУ «Общеобразовательная школа с. Беловодское»", capacity: "50/-", contacts: "Дюсембаев Мерекебай Жаксылыкович, 87761826969", road: "А/д «Новокиенка - Перекатное»"},
+            {id: 217, city: "с. Чапаевское", district: "Жаксынский район", point: "КГУ «Общеобразовательная школа с. Чапаевское»", capacity: "50/-", contacts: "Хусаинова Бахыт Таженовна, 87712649285", road: "А/д «Подъезд к селу Чапаевское»"},
+            {id: 218, city: "с. Новокиенка", district: "Жаксынский район", point: "КГУ «Общеобразовательная школа с. Новокиенка»", capacity: "50/-", contacts: "Пинчук Валентина Александровна, 87085299193", road: "А/д «Новокиенка - Перекатное»"},
+            {id: 219, city: "с. Киевское", district: "Жаксынский район", point: "КГУ «Общеобразовательная школа с. Киевское»", capacity: "50/-", contacts: "Привалова Наталья Сергеевна, 87057602823", road: "А/д «Новокиенка - Перекатное»"},
+            {id: 220, city: "с. Кировское", district: "Жаксынский район", point: "КГУ «Общеобразовательная школа с. Кировское»", capacity: "50/-", contacts: "Златухина Лариса Александровна, 87713758222", road: "А/д «Подъезд к селу Кировское»"},
+            {id: 221, city: "с. Терсакан", district: "Жаксынский район", point: "КГУ «Основная средняя школа с. Терсакан»", capacity: "50/-", contacts: "Махамбетова Хазима Тулюбаевна, 87751001429", road: "А/д «Кийма – Терсакан»"},
+            {id: 222, city: "с. Калининское", district: "Жаксынский район", point: "КГУ «Основная средняя школа с. Калининское»", capacity: "50/-", contacts: "Кажагельдина Людмила Григорьевна, 87771147845", road: "А/д «Жаксы – Чистополье»"},
+            {id: 223, city: "с. Моховое", district: "Жаксынский район", point: "КГУ «Основная средняя школа с. Моховое»", capacity: "50/-", contacts: "Ахметова Гульнар Амиржановна, 87778692340", road: "А/д «Жаксы – Чистополье»"},
+            
+            // Коргалжынский район (8 пунктов)
+            {id: 224, city: "с. Сабынды", district: "Коргалжынский район", point: "Мечеть с. Сабынды", capacity: "30/10", contacts: "Даметов Тимур Нурхамитулы, 87013795583", road: "Трасса «Астана-Коргалжын»"},
+            {id: 225, city: "с. Караегин", district: "Коргалжынский район", point: "КГУ «Общеобразовательная школа имени Ш. Уалиханова с. Караегин»", capacity: "20/-", contacts: "Касекнова Арнагуль Нуржановна, 87022998360", road: "Трасса «Астана-Коргалжын»"},
+            {id: 226, city: "с. Жантеке", district: "Коргалжынский район", point: "КГУ «Общеобразовательная школа с. Жантеке»", capacity: "20/-", contacts: "Кошкарбаев Жомартжан, 87013408527", road: "Трасса «Астана-Коргалжын»"},
+            {id: 227, city: "с. Оркендеу", district: "Коргалжынский район", point: "КГУ «Общеобразовательная школа с. Оркендеу»", capacity: "20/-", contacts: "Исина Роза Абжановна, 87023672068", road: "Трасса «Астана-Коргалжын»"},
+            {id: 228, city: "с. Коргалжын", district: "Коргалжынский район", point: "Колледж агробизнеса и сервиса", capacity: "30/-", contacts: "Путинцева В. С., 87758864194", road: "А/д «Сабынды-Арыкты-Коргалжын»"},
+            {id: 229, city: "с. Кенбидайк", district: "Коргалжынский район", point: "КГУ «Общеобразовательная школа с. Кенбидайк»", capacity: "20/-", contacts: "Шопанова Жанар Мейрамбаевна, 87779578094", road: "А/д «Сабынды-Арыкты-Коргалжын»"},
+            {id: 230, city: "с. Арыкты", district: "Коргалжынский район", point: "КГУ «Общеобразовательная школа с. Арыкты»", capacity: "20/-", contacts: "Кульбаева Айгерим Серикбаевна, 87001712066", road: "А/д «Сабынды-Арыкты   -Коргалжын»"},
+            {id: 231, city: "с. Шалкар", district: "Коргалжынский район", point: "КГУ «Общеобразовательная школа с. Шалкар»", capacity: "20/-", contacts: "Мухатова Каршыга Кошербаевна, 87056331551", road: "А/д «Коргалжын-Баршын»"},
+            
+            // Сандыктауский район (27 пунктов)
+            {id: 232, city: "с. Балкашино", district: "Сандыктауский район", point: "Районный дом культуры", capacity: "50/-", contacts: "Руди Анна Анатольевна, 87024126198", road: "Трасса «Кокшетау- Атбасар»"},
+            {id: 233, city: "с. Балкашино", district: "Сандыктауский район", point: "Центральная районная больница", capacity: "50/30", contacts: "Маханов Жандос Зерханович, 87770401237", road: "Трасса «Кокшетау- Атбасар»"},
+            {id: 234, city: "с. Балкашино", district: "Сандыктауский район", point: "КГУ «Общеобразовательная школа №1 с. Балкашино»", capacity: "50/-", contacts: "Дулат Айнагуль, 87776420730", road: "Трасса «Кокшетау- Атбасар»"},
+            {id: 235, city: "с. Балкашино", district: "Сандыктауский район", point: "Туристический комплекс «Канагат»", capacity: "30/30", contacts: "Канафин Берик Абдешевич, 87017292741", road: "Трасса «Кокшетау- Атбасар»"},
+            {id: 236, city: "с. Сандыктау", district: "Сандыктауский район", point: "Здание Сандыктауского Дома культуры", capacity: "20/-", contacts: "Райфшнаедер Ирина Петровна, 87770404953", road: "Трасса «Кокшетау- Атбасар»"},
+            {id: 237, city: "с. Максимовка", district: "Сандыктауский район", point: "КГУ «Общеобразовательная школа с. Максимовка»", capacity: "20/-", contacts: "Андреева Ольга Филипповна", road: "Трасса «Кокшетау- Атбасар»"},
+            {id: 238, city: "с. Владимировка", district: "Сандыктауский район", point: "Здание Владимировского сельского клуба", capacity: "15/-", contacts: "Рыхликова Валентина Александровна, 87774749203", road: "Трасса «Кокшетау- Атбасар»"},
+            {id: 239, city: "с. Спасское", district: "Сандыктауский район", point: "КГУ «Основная средняя школа с. Спасское»", capacity: "25/-", contacts: "Сунцова Елена Сергеевна", road: "Трасса «Кокшетау- Атбасар»"},
+            {id: 240, city: "с. Каменка", district: "Сандыктауский район", point: "КГУ «Общеобразовательная школа с. Каменка»", capacity: "20/-", contacts: "Радецкая Юлия Сергеевна", road: "А/д «Балкашино-Каменка-Улан»"},
+            {id: 241, city: "с. Каменка", district: "Сандыктауский район", point: "Агротехнический колледж с. Каменка", capacity: "60/20", contacts: "Кудин Константин Петрович, 87770350075", road: "А/д «Каменка-Балкашино»"},
+            {id: 242, city: "с. Приозерное", district: "Сандыктауский район", point: "КГУ «Общеобразовательная школа с. Приозёрное»", capacity: "20/-", contacts: "Анапин Сарсембай Камидулаевич", road: "А/д «Балкашино-Приозерное-Шантобе»"},
+            {id: 243, city: "с. Лесное", district: "Сандыктауский район", point: "КГУ «Общеобразовательная школа с. Лесное»", capacity: "30/-", contacts: "Ерке Людмила Викторовна", road: "А/д «Балкашино-Приозерное-Шантобе»"},
+            {id: 244, city: "с. Веселое", district: "Сандыктауский район", point: "КГУ «Общеобразовательная школа имени Байдалы Уразалина, Героя Социалистического Труда с. Веселое»", capacity: "30/-", contacts: "Тельпекбаев Маргулан Сагандыкович", road: "А/д «Новый Городок – Веселое»"},
+            {id: 245, city: "с. Васильевка", district: "Сандыктауский район", point: "КГУ «Основная средняя школа села Васильевка»", capacity: "15/-", contacts: "Шатравин Александр Викторович", road: "А/д «Балкашино-Каменка-Улан»"},
+            {id: 246, city: "с. Мадениет", district: "Сандыктауский район", point: "КГУ «Общеобразовательная школа с. Мадениет»", capacity: "20/-", contacts: "Кудайбергенова Куралай Дюсембаевна", road: "А/д «Балкашино-Каменка-Мадениет»"},
+            {id: 247, city: "п. Шантобе", district: "Сандыктауский район", point: "КГУ «Общеобразовательная школа имени В.Комарова п. Шантобе»", capacity: "50/-", contacts: "Кулнашарова Анар Есенбеккызы, 87715924944", road: "А/д «Шантобе-Балкашино»"},
+            {id: 248, city: "п. Шантобе", district: "Сандыктауский район", point: "Дом культуры «Горняк»", capacity: "40/-", contacts: "Кнак Инна Александровна, 87779519483", road: "А/д «Шантобе-Балкашино»"},
+            {id: 249, city: "с. Петриковка", district: "Сандыктауский район", point: "КГУ «Начальная школа с. Петриковка»", capacity: "20/-", contacts: "Хучаева Залпа Мугданкызы", road: "А/д «Каменка-Балкашино»"},
+            {id: 250, city: "с. Белгородское", district: "Сандыктауский район", point: "КГУ «Основная средняя школа с. Белгородское»", capacity: "20/-", contacts: "Шлыкова Елена Викторовна", road: "А/д «Балкашино-Белгородское-Раздольное»"},
+            {id: 251, city: "с. Баракпай", district: "Сандыктауский район", point: "КГУ «Основная средняя школа с. Баракпай»", capacity: "10/-", contacts: "Гура Наталья Владимировна", road: "А/д «Балкашино-Шантюбе- Баракпай»"},
+            {id: 252, city: "с. Красная Поляна", district: "Сандыктауский район", point: "КГУ «Общеобразовательная школа с. Красная поляна»", capacity: "15/-", contacts: "Ибаева Яха Масутовна", road: "А/д «Балкашино-Богородка- Красная Поляна»"},
+            {id: 253, city: "с. Новоникольское", district: "Сандыктауский район", point: "КГУ «Общеобразовательная школа с. Новоникольское»", capacity: "15/-", contacts: "Головченко Ирина Юрьевна", road: "А/д «Сандыктау-Новоникольское»"},
+            {id: 254, city: "с. Богородка", district: "Сандыктауский район", point: "КГУ «Основная средняя школа с. Богородка»", capacity: "20/-", contacts: "Турысбеков Мади Кенжебаевич", road: "А/д «Балкашино-Каменка-Богородка»"},
+            {id: 255, city: "с. Дорогинка", district: "Сандыктауский район", point: "КГУ «Основная средняя школа с. Дорогинка»", capacity: "20/-", contacts: "Искакова Дарья Кадиржановна", road: "А/д «Балкашино-Дорогинка –Богородка»"},
+            {id: 256, city: "с. Раздольное", district: "Сандыктауский район", point: "КГУ «Начальная школа с. Раздольное»", capacity: "15/-", contacts: "Бектурова Алма Ерденовна", road: "А/д «Раздольное-Каменка»"},
+            {id: 257, city: "с. Улан", district: "Сандыктауский район", point: "КГУ «Основная средняя школа с. Улан»", capacity: "25/-", contacts: "Полегошко Лариса Николаевна", road: "А/д «Каменка-Улан»"},
+            {id: 258, city: "с. Новоромановка", district: "Сандыктауский район", point: "КГУ «Основная средняя школа с. Новоромановка»", capacity: "20/-", contacts: "Пономарев Игорь Вячеславович", road: "А/д «Новорамановка-Балкашино»"},
+            
+            // Шортандинский район (10 пунктов)
+            {id: 259, city: "п. Шортанды", district: "Шортандинский район", point: "Кафе-гостиница «Ласточка»", capacity: "80/-", contacts: "Кашубская Лидия Александровна, 87015360425", road: "Трасса «Щучинск – Астана»"},
+            {id: 260, city: "с. Дамса", district: "Шортандинский район", point: "КГУ «Общеобразовательная школа им. В.П. Кузьмина с. Дамса»", capacity: "60/-", contacts: "Абилова Алтынай Сейпельевна", road: "Трасса «Астана – Щучинск»"},
+            {id: 261, city: "с. Бозайгыр", district: "Шортандинский район", point: "КГУ «Агротехнический колледж №5»", capacity: "120/-", contacts: "Калиева Гульмира Жаксылыковна, 87079320799", road: "Трасса «Щучинск – Астана»"},
+            {id: 262, city: "с. Дамса", district: "Шортандинский район", point: "гостиница Меруерт", capacity: "60/30", contacts: "Жукова Ирина Николаевна, 87013663912", road: "Трасса «Щучинск – Астана»"},
+            {id: 263, city: "п. Жолымбет", district: "Шортандинский район", point: "КГУ «Центр оказания специальных социальных услуг п. Жолымбет»", capacity: "30/-", contacts: "Шахметов Ерлан Нурланович", road: "А/д «Жолымбет – Шортанды – Пригородное»"},
+            {id: 264, city: "п. Шортанды", district: "Шортандинский район", point: "гостиница «Шанырак»", capacity: "20/-", contacts: "Ченбарисова Руфия Романовна, 87056337159", road: "А/д «Жолимбет – Шортанды – Пригородное»"},
+            {id: 265, city: "п. Шортанды", district: "Шортандинский район", point: "КГУ «Общеобразовательная школа №3 п. Шортанды»", capacity: "150/-", contacts: "Анесий Азамат", road: "А/д «Жолымбет – Шортанды – Пригородное»"},
+            {id: 266, city: "с. Пригородное", district: "Шортандинский район", point: "КГУ «Общеобразовательная школа с. Пригородное»", capacity: "50/-", contacts: "Тамемов Кайыржан Алпысбаевич", road: "А/д «Жолымбет – Шортанды – Пригородное»"},
+            {id: 267, city: "с. Раевка", district: "Шортандинский район", point: "КГУ «Общеобразовательная школа с. Раевка»", capacity: "40/-", contacts: "Дрогоруб Тамара Николаевна", road: "А/д «Жолымбет – Шортанды – Пригородное»"},
+            {id: 268, city: "с. Бектау", district: "Шортандинский район", point: "КГУ «Общеобразовательная школа с. Бектау»", capacity: "30/-", contacts: "Тулебаев Канат Шакенович", road: "А/д «Жолымбет – Шортанды – Пригородное»"},
+            
+            // Целиноградский район (12 пунктов)
+            {id: 269, city: "с. Талапкер", district: "Целиноградский район", point: "КГУ «Общеобразовательная школа с. Талапкер»", capacity: "100/10", contacts: "Абеева Сагимбала Хасеновна, 87759072935", road: "Трасса «Алматы – Екатеринбург»"},
+            {id: 270, city: "а. Акмол", district: "Целиноградский район", point: "КГУ «Общеобразовательная школа с. Акмол»", capacity: "100/10", contacts: "Атыгаева Нурсулу Асемхановна, 87753065847", road: "Трасса «Астана – Коргалжын»"},
+            {id: 271, city: "с. Тасты", district: "Целиноградский район", point: "КГУ «Общеобразовательная школа с. Тасты»", capacity: "50/-", contacts: "Османова Ризвангуль Ясуновна, 87024568974", road: "Трасса «Алматы – Екатеринбург»"},
+            {id: 272, city: "с. Софиевка", district: "Целиноградский район", point: "КГУ «Общеобразовательная школа с. Софиевка»", capacity: "50/-", contacts: "Малгаждарова Карлыгаш Баяндиновна, 87014567893", road: "Трасса «Астана – Павлодар»"},
+            {id: 273, city: "с. Акжар", district: "Целиноградский район", point: "КГУ «Общеобразовательная школа с. Акжар»", capacity: "50/-", contacts: "Қызыр Айдос, 87774045505", road: "Трасса «Астана – Павлодар»"},
+            {id: 274, city: "с. Оразак", district: "Целиноградский район", point: "КГУ «Общеобразовательная школа с. Оразак»", capacity: "50/-", contacts: "Майлекова Орал Кабылдиновна, 87006660906", road: "Трасса Астана – Коргалжын»"},
+            {id: 275, city: "с. Кабанбай батыра", district: "Целиноградский район", point: "КГУ «Общеобразовательная школа с. Кабанбай батыра»", capacity: "50/-", contacts: "Сагинаев Даурен Жуматевич, 87775556677", road: "Трасса «Астана – Темиртау»"},
+            {id: 276, city: "с. Р.Кошкарбаева", district: "Целиноградский район", point: "КГУ «Общеобразовательная школа с. Рахымжан Кошкарбаева»", capacity: "50/-", contacts: "Сағынаев Амангелді Теміркенұлы, 87759035678", road: "А/д «Кабанбай батыр – Жалгызкудук – Оразак»"},
+            {id: 277, city: "с. Жалгызкудук", district: "Целиноградский район", point: "КГУ «Общеобразовательная школа с. Жалгызкудук»", capacity: "50/-", contacts: "Аманбаева Рауза Кабдуловна, 87014589631", road: "А/д «Кабанбай батыр – Жалгызкудук – Оразак»"},
+            {id: 278, city: "с. Шалкар", district: "Целиноградский район", point: "КГУ «Общеобразовательная школа с. Шалкар»", capacity: "50/-", contacts: "Искаков Абильмансур Айболович, 87081238965", road: "А/д «Кабанбай батыр – Жалгызкудук – Оразак»"},
+            {id: 279, city: "с. Нуресиль", district: "Целиноградский район", point: "КГУ «Общеобразовательная школа с. Нуресиль»", capacity: "50/-", contacts: "Конкыбаева Алия Оразалиевна, 87754562136", road: "А/д «Акмол – Нуресиль – Талапкер»"},
+            {id: 280, city: "с. Жана Жайнак", district: "Целиноградский район", point: "КГУ «Общеобразовательная школа с. Жанажайнак»", capacity: "50/-", contacts: "Жапан Баянгонус, 87068526914", road: "А/д «Нуресиль – Жанаесиль – Зелёный Гай»"}
+        ];
+
+        // Данные зарядных станций
+        const chargingStations = [
+            {id: 1, location: "а/д А-1 Астана-Петропавловск 18 км справа АЗС", connectors: ["GB/T 80кВт", "CCS 2 80кВт"], schedule: "круглосуточно", power: "100Т/кВт-ч", operator: "QazaqEnergyCharge №10", road: "А-1", lat: 51.2, lng: 71.4, powerNum: 80},
+            {id: 2, location: "а/д А-1 Астана-Петропавловск 20 км справа АЗС", connectors: ["GB/T 80кВт", "CCS 2 80кВт"], schedule: "круглосуточно", power: "100Т/кВт-ч", operator: "QazaqEnergyCharge №34", road: "А-1", lat: 51.3, lng: 71.5, powerNum: 80},
+            {id: 3, location: "а/д А-1 Астана-Петропавловск 74 км слева АЗС", connectors: ["GB/T 160кВт", "CCS 2 160кВт"], schedule: "круглосуточно", power: "100Т/кВт-ч", operator: "QazaqEnergyCharge №35", road: "А-1", lat: 51.5, lng: 71.8, powerNum: 160},
+            {id: 4, location: "а/д А-1 Астана-Петропавловск 104 км справа АЗС", connectors: ["GB/T 160кВт", "CCS 2 160кВт"], schedule: "круглосуточно", power: "100Т/кВт-ч", operator: "QazaqEnergyCharge №32", road: "А-1", lat: 51.7, lng: 72.0, powerNum: 160},
+            {id: 5, location: "а/д А-1 Астана-Петропавловск 234 км справа АЗС", connectors: ["GB/T 160кВт", "CCS 2 160кВт"], schedule: "круглосуточно", power: "100Т/кВт-ч", operator: "QazaqEnergyCharge №52", road: "А-1", lat: 52.0, lng: 72.5, powerNum: 160},
+            {id: 6, location: "а/д А-1 Астана-Петропавловск 234 км слева АЗС", connectors: ["GB/T 160кВт", "CCS 2 160кВт"], schedule: "круглосуточно", power: "100Т/кВт-ч", operator: "QazaqEnergyCharge №33", road: "А-1", lat: 52.0, lng: 72.5, powerNum: 160},
+            {id: 7, location: "а/д М-36 Екатеринбург-Алматы км 1284 АЗС", connectors: ["GB/T 160кВт", "CCS 2 160кВт"], schedule: "круглосуточно", power: "100Т/кВт-ч", operator: "Qazaq Energy Charge №31", road: "М-36", lat: 51.1, lng: 71.3, powerNum: 160}
+        ];
+
+        // Переменные для пагинации и фильтрации
+        let heatingCurrentPage = 1;
+        let chargingCurrentPage = 1;
+        const itemsPerPage = 20;
+        let filteredHeatingData = [...heatingPoints];
+        let filteredChargingData = [...chargingStations];
+        
+        // Карты
+        let chargingMap, roadsMap;
+        let chargingMarkers = [];
+        
+        // Навигация по вкладкам
+        document.querySelectorAll('.nav-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                // Убираем активный класс у всех вкладок
+                document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                
+                // Добавляем активный класс к выбранной вкладке
+                tab.classList.add('active');
+                const tabId = tab.getAttribute('data-tab');
+                document.getElementById(tabId).classList.add('active');
+                
+                // Если открыта вкладка с картами, инициализируем их
+                if (tabId === 'heating') {
+                    // Убрана инициализация карты обогрева
+                    renderHeatingTable();
+                } else if (tabId === 'charging') {
+                    if (!chargingMap) {
+                        initChargingMap();
+                    } else {
+                        updateChargingMapMarkers();
+                        chargingMap.invalidateSize();
+                    }
+                    renderChargingTable();
+                } else if (tabId === 'roads') {
+                    if (!roadsMap) {
+                        initRoadsMap();
+                    } else {
+                        roadsMap.invalidateSize();
+                    }
+                }
+            });
+        });
+        
+        // Инициализация карты зарядных станций
+        function initChargingMap() {
+            chargingMap = L.map('chargingMap').setView([51.5, 71.0], 8);
+            
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors',
+                maxZoom: 18
+            }).addTo(chargingMap);
+            
+            updateChargingMapMarkers();
+        }
+        
+        // Инициализация карты дорог
+        function initRoadsMap() {
+            roadsMap = L.map('roadsMap').setView([51.5, 71.0], 8);
+            
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors',
+                maxZoom: 18
+            }).addTo(roadsMap);
+            
+            // Добавляем линии основных дорог (упрощённо)
+            const roads = [
+                {name: "А-1", coords: [[51.18, 71.45], [51.3, 71.5], [51.5, 71.8], [52.0, 72.5]]},
+                {name: "М-36", coords: [[50.5, 69.5], [51.1, 71.3], [51.5, 72.5]]},
+                {name: "Кокшетау-Щучинск", coords: [[53.3, 69.4], [52.9, 70.2]]},
+                {name: "Кокшетау-Атбасар", coords: [[53.3, 69.4], [52.0, 68.5]]}
+            ];
+            
+            roads.forEach(road => {
+                L.polyline(road.coords, {
+                    color: '#0057b8',
+                    weight: 4,
+                    opacity: 0.7
+                }).addTo(roadsMap).bindPopup(`<strong>Трасса ${road.name}</strong>`);
+            });
+        }
+        
+        // Обновление маркеров зарядных станций
+        function updateChargingMapMarkers() {
+            chargingMarkers.forEach(marker => chargingMap.removeLayer(marker));
+            chargingMarkers = [];
+            
+            filteredChargingData.forEach(station => {
+                const iconColor = station.powerNum >= 160 ? 'orange' : (station.powerNum >= 100 ? 'blue' : 'green');
+                
+                const customIcon = L.divIcon({
+                    html: `<div class="ev-icon ${iconColor}"><i class="fas fa-charging-station"></i></div>`,
+                    iconSize: [30, 30],
+                    className: 'ev-marker'
+                });
+                
+                const marker = L.marker([station.lat, station.lng], { icon: customIcon })
+                    .addTo(chargingMap)
+                    .bindPopup(`
+                        <div>
+                            <h3>Зарядная станция №${station.id}</h3>
+                            <div class="popup-info"><span class="popup-label">Местоположение:</span> ${station.location}</div>
+                            <div class="popup-info"><span class="popup-label">Типы разъёмов:</span> ${station.connectors.join(', ')}</div>
+                            <div class="popup-info"><span class="popup-label">Мощность:</span> ${station.power}</div>
+                            <div class="popup-info"><span class="popup-label">График работы:</span> ${station.schedule}</div>
+                            <div class="popup-info"><span class="popup-label">Оператор:</span> ${station.operator}</div>
+                            <div class="popup-info"><span class="popup-label">Трасса:</span> ${station.road}</div>
+                        </div>
+                    `);
+                
+                chargingMarkers.push(marker);
+            });
+            
+            if (chargingMarkers.length > 0) {
+                const group = L.featureGroup(chargingMarkers);
+                chargingMap.fitBounds(group.getBounds().pad(0.1));
+            }
+        }
+        
+        // Переключение между картой и таблицей для зарядных станций
+        document.getElementById('toggleChargingTable').addEventListener('click', function() {
+            const tableSection = document.getElementById('chargingTableSection');
+            const isTableVisible = tableSection.style.display !== 'none';
+            
+            if (isTableVisible) {
+                tableSection.style.display = 'none';
+                this.innerHTML = '<i class="fas fa-table"></i><span>Показать таблицу</span>';
+                if (chargingMap) chargingMap.invalidateSize();
+            } else {
+                tableSection.style.display = 'block';
+                this.innerHTML = '<i class="fas fa-map-marked-alt"></i><span>Показать карту</span>';
+                renderChargingTable();
+            }
+        });
+        
+        // Функция отрисовки таблицы пунктов обогрева
+        function renderHeatingTable() {
+            const tableBody = document.getElementById('heatingTableBody');
+            const pagination = document.getElementById('heatingPagination');
+            const showingElement = document.getElementById('heatingShowing');
+            const totalElement = document.getElementById('heatingTotal');
+            
+            tableBody.innerHTML = '';
+            pagination.innerHTML = '';
+            
+            const totalItems = filteredHeatingData.length;
+            const totalPages = Math.ceil(totalItems / itemsPerPage);
+            
+            const startIndex = (heatingCurrentPage - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            const pageData = filteredHeatingData.slice(startIndex, endIndex);
+            
+            // Обновляем информацию о количестве данных
+            showingElement.textContent = Math.min(endIndex, totalItems);
+            totalElement.textContent = totalItems;
+            
+            pageData.forEach(item => {
+                const hasBeds = item.capacity.includes('/') && !item.capacity.endsWith('/-');
+                const capacityBadgeClass = hasBeds ? 'capacity-badge' : 'capacity-badge full';
+                
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${item.id}</td>
+                    <td>
+                        <div class="district-badge">${item.district}</div>
+                        ${item.city}
+                    </td>
+                    <td>${item.district}</td>
+                    <td>
+                        <strong>${item.point}</strong>
+                    </td>
+                    <td><span class="${capacityBadgeClass}">${item.capacity}</span></td>
+                    <td>${item.contacts}</td>
+                    <td>
+                        <div class="road-badge">${item.road}</div>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+            
+            if (filteredHeatingData.length === 0) {
+                const row = document.createElement('tr');
+                row.innerHTML = `<td colspan="7" style="text-align: center; padding: 40px;">По вашему запросу ничего не найдено</td>`;
+                tableBody.appendChild(row);
+            }
+            
+            // Пагинация
+            if (totalPages > 1) {
+                // Кнопка "Назад"
+                if (heatingCurrentPage > 1) {
+                    const prevButton = document.createElement('button');
+                    prevButton.innerHTML = '<i class="fas fa-chevron-left"></i>';
+                    prevButton.addEventListener('click', () => {
+                        heatingCurrentPage--;
+                        renderHeatingTable();
+                    });
+                    pagination.appendChild(prevButton);
+                }
+                
+                // Номера страниц
+                for (let i = 1; i <= totalPages; i++) {
+                    if (i === 1 || i === totalPages || (i >= heatingCurrentPage - 2 && i <= heatingCurrentPage + 2)) {
+                        const button = document.createElement('button');
+                        button.textContent = i;
+                        button.classList.toggle('active', i === heatingCurrentPage);
+                        button.addEventListener('click', () => {
+                            heatingCurrentPage = i;
+                            renderHeatingTable();
+                        });
+                        pagination.appendChild(button);
+                    } else if (i === heatingCurrentPage - 3 || i === heatingCurrentPage + 3) {
+                        const ellipsis = document.createElement('span');
+                        ellipsis.textContent = '...';
+                        ellipsis.style.padding = '10px 5px';
+                        pagination.appendChild(ellipsis);
+                    }
+                }
+                
+                // Кнопка "Вперед"
+                if (heatingCurrentPage < totalPages) {
+                    const nextButton = document.createElement('button');
+                    nextButton.innerHTML = '<i class="fas fa-chevron-right"></i>';
+                    nextButton.addEventListener('click', () => {
+                        heatingCurrentPage++;
+                        renderHeatingTable();
+                    });
+                    pagination.appendChild(nextButton);
+                }
+            }
+        }
+        
+        // Функция отрисовки таблицы зарядных станций
+        function renderChargingTable() {
+            const tableBody = document.getElementById('chargingTableBody');
+            const pagination = document.getElementById('chargingPagination');
+            const showingElement = document.getElementById('chargingShowing');
+            const totalElement = document.getElementById('chargingTotal');
+            
+            tableBody.innerHTML = '';
+            pagination.innerHTML = '';
+            
+            const totalItems = filteredChargingData.length;
+            const totalPages = Math.ceil(totalItems / itemsPerPage);
+            
+            const startIndex = (chargingCurrentPage - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            const pageData = filteredChargingData.slice(startIndex, endIndex);
+            
+            // Обновляем информацию о количестве данных
+            showingElement.textContent = Math.min(endIndex, totalItems);
+            totalElement.textContent = totalItems;
+            
+            pageData.forEach(item => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${item.id}</td>
+                    <td>
+                        <div class="road-badge">${item.road}</div>
+                        ${item.location}
+                    </td>
+                    <td>
+                        ${item.connectors.map(conn => {
+                            const isGB = conn.includes('GB/T');
+                            return `<span class="connector-badge ${isGB ? 'gb' : 'ccs'}">${conn}</span>`;
+                        }).join('')}
+                    </td>
+                    <td>${item.schedule}</td>
+                    <td>
+                        <span class="power-badge">${item.power}</span>
+                    </td>
+                    <td><strong>${item.operator}</strong></td>
+                    <td>${item.road}</td>
+                `;
+                tableBody.appendChild(row);
+            });
+            
+            if (filteredChargingData.length === 0) {
+                const row = document.createElement('tr');
+                row.innerHTML = `<td colspan="7" style="text-align: center; padding: 40px;">По вашему запросу ничего не найдено</td>`;
+                tableBody.appendChild(row);
+            }
+            
+            // Пагинация
+            if (totalPages > 1) {
+                // Кнопка "Назад"
+                if (chargingCurrentPage > 1) {
+                    const prevButton = document.createElement('button');
+                    prevButton.innerHTML = '<i class="fas fa-chevron-left"></i>';
+                    prevButton.addEventListener('click', () => {
+                        chargingCurrentPage--;
+                        renderChargingTable();
+                    });
+                    pagination.appendChild(prevButton);
+                }
+                
+                // Номера страниц
+                for (let i = 1; i <= totalPages; i++) {
+                    if (i === 1 || i === totalPages || (i >= chargingCurrentPage - 2 && i <= chargingCurrentPage + 2)) {
+                        const button = document.createElement('button');
+                        button.textContent = i;
+                        button.classList.toggle('active', i === chargingCurrentPage);
+                        button.addEventListener('click', () => {
+                            chargingCurrentPage = i;
+                            renderChargingTable();
+                        });
+                        pagination.appendChild(button);
+                    } else if (i === chargingCurrentPage - 3 || i === chargingCurrentPage + 3) {
+                        const ellipsis = document.createElement('span');
+                        ellipsis.textContent = '...';
+                        ellipsis.style.padding = '10px 5px';
+                        pagination.appendChild(ellipsis);
+                    }
+                }
+                
+                // Кнопка "Вперед"
+                if (chargingCurrentPage < totalPages) {
+                    const nextButton = document.createElement('button');
+                    nextButton.innerHTML = '<i class="fas fa-chevron-right"></i>';
+                    nextButton.addEventListener('click', () => {
+                        chargingCurrentPage++;
+                        renderChargingTable();
+                    });
+                    pagination.appendChild(nextButton);
+                }
+            }
+        }
+        
+        // Поиск по таблице пунктов обогрева
+        document.getElementById('heatingSearchInput').addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            filteredHeatingData = heatingPoints.filter(item => 
+                item.city.toLowerCase().includes(searchTerm) ||
+                item.district.toLowerCase().includes(searchTerm) ||
+                item.point.toLowerCase().includes(searchTerm) ||
+                item.road.toLowerCase().includes(searchTerm) ||
+                item.contacts.toLowerCase().includes(searchTerm)
+            );
+            heatingCurrentPage = 1;
+            renderHeatingTable();
+        });
+        
+        // Поиск по таблице зарядных станций
+        document.getElementById('chargingSearchInput').addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            filteredChargingData = chargingStations.filter(item => 
+                item.location.toLowerCase().includes(searchTerm) ||
+                item.operator.toLowerCase().includes(searchTerm) ||
+                item.road.toLowerCase().includes(searchTerm) ||
+                item.connectors.some(conn => conn.toLowerCase().includes(searchTerm))
+            );
+            chargingCurrentPage = 1;
+            renderChargingTable();
+            updateChargingMapMarkers();
+        });
+        
+        // Фильтры для пунктов обогрева
+        document.getElementById('districtSelect').addEventListener('change', function() {
+            const district = this.value;
+            
+            if (district === 'all') {
+                filteredHeatingData = [...heatingPoints];
+            } else {
+                filteredHeatingData = heatingPoints.filter(item => 
+                    item.district.includes(district)
+                );
+            }
+            
+            // Сбрасываем активные кнопки фильтров
+            document.querySelectorAll('#heating .filter-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById('filterAll').classList.add('active');
+            
+            heatingCurrentPage = 1;
+            renderHeatingTable();
+        });
+        
+        document.querySelectorAll('#heating .filter-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('#heating .filter-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                
+                const filterType = this.id;
+                
+                if (filterType === 'filterAll') {
+                    filteredHeatingData = [...heatingPoints];
+                } else if (filterType === 'filterWithBeds') {
+                    filteredHeatingData = heatingPoints.filter(item => 
+                        item.capacity.includes('/') && !item.capacity.endsWith('/-')
+                    );
+                } else if (filterType === 'filterHighway') {
+                    filteredHeatingData = heatingPoints.filter(item => 
+                        item.road.includes('Трасса') || item.road.includes('трасса')
+                    );
+                }
+                
+                // Сбрасываем выбор района
+                document.getElementById('districtSelect').value = 'all';
+                
+                heatingCurrentPage = 1;
+                renderHeatingTable();
+            });
+        });
+        
+        // Фильтры для зарядных станций
+        document.querySelectorAll('#charging .filter-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('#charging .filter-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                
+                const filterType = this.id;
+                
+                if (filterType === 'chargingFilterAll') {
+                    filteredChargingData = [...chargingStations];
+                } else if (filterType === 'chargingFilterGB') {
+                    filteredChargingData = chargingStations.filter(item => 
+                        item.connectors.some(conn => conn.includes('GB/T'))
+                    );
+                } else if (filterType === 'chargingFilterCCS') {
+                    filteredChargingData = chargingStations.filter(item => 
+                        item.connectors.some(conn => conn.includes('CCS 2'))
+                    );
+                } else if (filterType === 'chargingFilterHighPower') {
+                    filteredChargingData = chargingStations.filter(item => 
+                        item.powerNum >= 160
+                    );
+                }
+                
+                chargingCurrentPage = 1;
+                renderChargingTable();
+                updateChargingMapMarkers();
+            });
+        });
+        
+        // Экспорт данных пунктов обогрева
+        document.getElementById('exportHeating').addEventListener('click', function() {
+            exportToCSV(filteredHeatingData, 'Пункты обогрева Акмолинской области', [
+                {key: 'id', title: '№'},
+                {key: 'city', title: 'Населённый пункт'},
+                {key: 'district', title: 'Район'},
+                {key: 'point', title: 'Пункт обогрева'},
+                {key: 'capacity', title: 'Вместимость'},
+                {key: 'contacts', title: 'Контакты'},
+                {key: 'road', title: 'Дорога'}
+            ]);
+        });
+        
+        // Экспорт данных зарядных станций
+        document.getElementById('exportCharging').addEventListener('click', function() {
+            exportToCSV(filteredChargingData, 'Зарядные станции Акмолинской области', [
+                {key: 'id', title: '№'},
+                {key: 'location', title: 'Местоположение'},
+                {key: 'connectors', title: 'Типы разъёмов', formatter: (val) => val.join(', ')},
+                {key: 'schedule', title: 'График работы'},
+                {key: 'power', title: 'Мощность'},
+                {key: 'operator', title: 'Оператор'},
+                {key: 'road', title: 'Трасса'}
+            ]);
+        });
+        
+        // Функция экспорта в CSV
+        function exportToCSV(data, filename, columns) {
+            if (data.length === 0) {
+                alert('Нет данных для экспорта');
+                return;
+            }
+            
+            // Заголовки
+            const headers = columns.map(col => col.title);
+            
+            // Данные
+            const rows = data.map(item => {
+                return columns.map(col => {
+                    let value = item[col.key];
+                    if (col.formatter) {
+                        value = col.formatter(value);
+                    }
+                    // Экранируем кавычки и добавляем кавычки если есть запятые или кавычки
+                    if (typeof value === 'string' && (value.includes(',') || value.includes('"') || value.includes('\n'))) {
+                        value = '"' + value.replace(/"/g, '""') + '"';
+                    }
+                    return value;
+                });
+            });
+            
+            // Собираем CSV
+            const csvContent = [headers, ...rows]
+                .map(row => row.join(','))
+                .join('\n');
+            
+            // Создаем BLOB и скачиваем
+            const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.setAttribute('href', url);
+            link.setAttribute('download', `${filename}_${new Date().toISOString().slice(0,10)}.csv`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            alert(`Данные экспортированы в файл: ${filename}.csv`);
+        }
+        
+        // Обработка формы обратной связи
+        document.getElementById('feedbackForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const name = document.getElementById('name').value;
+            const email = document.getElementById('email').value;
+            const subject = document.getElementById('subject').value;
+            const message = document.getElementById('message').value;
+            
+            // В реальном приложении здесь был бы AJAX-запрос к серверу
+            alert(`Спасибо, ${name}! Ваше сообщение отправлено. Мы ответим вам на email ${email} в ближайшее время.`);
+            
+            // Сбрасываем форму
+            this.reset();
+        });
+        
+        // Инициализация при загрузке
+        document.addEventListener('DOMContentLoaded', function() {
+            // Рисуем таблицу при первой загрузке
+            renderHeatingTable();
+            renderChargingTable();
+            
+            // Инициализируем карты при открытии соответствующих вкладок
+            const activeTab = document.querySelector('.nav-tab.active').getAttribute('data-tab');
+            if (activeTab === 'heating') {
+                // Убрана инициализация карты обогрева
+            } else if (activeTab === 'charging') {
+                initChargingMap();
+            } else if (activeTab === 'roads') {
+                initRoadsMap();
+            }
+            
+            // Анимация элементов
+            const elements = document.querySelectorAll('.social-item, .phone-section, .stat-card, .road-info-card');
+            elements.forEach((el, index) => {
+                setTimeout(() => {
+                    el.style.opacity = '0';
+                    el.style.transform = 'translateY(20px)';
+                    el.style.transition = 'opacity 0.5s, transform 0.5s';
+                    
+                    setTimeout(() => {
+                        el.style.opacity = '1';
+                        el.style.transform = 'translateY(0)';
+                    }, 100);
+                }, index * 100);
+            });
+        });
+    </script>
+</body>
+</html>
